@@ -43,4 +43,16 @@ public class AuthService {
         System.out.println("user = " + user);
         return userRepository.save(user);
     }
+
+    public TokenResponse refreshToken(String refreshToken) {
+        if (!jwtTokenProvider.validateToken(refreshToken)) {
+            throw new IllegalArgumentException("Invalid refresh token");
+        }
+        
+        Long userId = jwtTokenProvider.getUserId(refreshToken);
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        
+        return jwtTokenProvider.createToken(user);
+    }
 } 
