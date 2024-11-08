@@ -12,8 +12,8 @@ public record LocationDTO(
         Double longitude,
         LocalDateTime createdAt) {
 
-    public static LocationDTO of(String placeName, String address, Double latitude, Double longitude) {
-        return new LocationDTO(null, placeName, address, latitude, longitude, null);
+    public LocationDTO(String placeName, String address, Double latitude, Double longitude) {
+        this(null, placeName, address, latitude, longitude, null);
     }
 
     public Location toEntity() {
