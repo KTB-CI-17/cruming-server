@@ -9,6 +9,7 @@ pipeline {
         CONTAINER_NAME          = 'ktb-cruming-server'
         REMOTE_PORT             = '8080'
         IMAGE_TAG               = 'latest'
+        FLUENTD_ADDRESS         = '3.35.176.227:24224'
     }
 
     stages {
