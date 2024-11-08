@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.ci.Cruming.auth.dto.TokenRequest;
 import com.ci.Cruming.auth.dto.TokenResponse;
+import com.ci.Cruming.auth.dto.RefreshTokenRequest;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -29,5 +30,11 @@ public class AuthController {
     public ResponseEntity<TokenResponse> exchangeToken(@Valid @RequestBody TokenRequest request) {
         log.info("Token exchange requested for provider: {}", request.provider());
         return ResponseEntity.ok(authService.exchangeToken(request));
+    }
+
+    @PostMapping("/token/refresh")
+    @Operation(summary = "토큰 재발급", description = "리프레시 토큰을 사용하여 새로운 액세스 토큰을 발급받습니다.")
+    public ResponseEntity<TokenResponse> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
+        return ResponseEntity.ok(authService.refreshToken(request.refreshToken()));
     }
 } 
