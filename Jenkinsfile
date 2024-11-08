@@ -7,7 +7,7 @@ pipeline {
         DOCKER_CREDENTIALS_ID   = 'docker_account'
         EC2_USER                = 'ubuntu'
         CONTAINER_NAME          = 'ktb-cruming-server'
-        REMOTE_PORT             = '8000'
+        REMOTE_PORT             = '8080'
         IMAGE_TAG               = 'latest'
     }
 
