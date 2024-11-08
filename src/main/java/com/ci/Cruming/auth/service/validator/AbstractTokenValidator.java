@@ -14,8 +14,9 @@ public abstract class AbstractTokenValidator {
     // 템플릿 메서드
     public final UserProfile validateAndGetProfile(String accessToken) {
         HttpHeaders headers = createHeaders(accessToken);
+        System.out.println("headers = " + headers);
         HttpEntity<String> entity = new HttpEntity<>(headers);
-
+        
         try {
             ResponseEntity<String> response = getRestTemplate().exchange(
                     getProfileUrl(),
