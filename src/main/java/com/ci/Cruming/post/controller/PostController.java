@@ -33,4 +33,12 @@ public class PostController {
         return UserDTO.of(1L);
     }
 
+    @PostMapping("/problems")
+    public ResponseEntity<Long> saveProblem(@RequestBody PostProblemRequest postProblemRequest) {
+        log.info(postProblemRequest.toString());
+        Long postId = postService.savePostProblem(postProblemRequest.toDTO(createUserDTO()));
+
+        return ResponseEntity.ok().body(postId);
+    }
+
 }

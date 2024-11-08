@@ -1,5 +1,8 @@
 package com.ci.Cruming.post.service;
 
+import com.ci.Cruming.location.dto.LocationDTO;
+import com.ci.Cruming.location.entity.Location;
+import com.ci.Cruming.location.repository.LocationRepository;
 import com.ci.Cruming.post.entity.Post;
 import com.ci.Cruming.post.dto.PostDTO;
 import com.ci.Cruming.user.entity.User;
@@ -13,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -23,6 +28,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostLikeRepository postLikeRepository;
     private final PostReplyRepository postReplyRepository;
+    private final LocationRepository locationRepository;
 
     @Transactional(readOnly = false)
     public Long savePost(PostDTO postDTO) {
@@ -32,6 +38,24 @@ public class PostService {
         postRepository.save(post);
 
         return post.getId();
+    }
+
+    @Transactional(readOnly = false)
+    public Long savePostProblem(PostDTO postDTO) {
+        User user = userRepository.getReferenceById(postDTO.userDTO().id());
+        Location location = getOrCreateLocation(postDTO.locationDTO());
+        Post post = postDTO.toEntity(user, location);
+        postRepository.save(post);
+        return post.getId();
+    }
+
+    private Location getOrCreateLocation(LocationDTO locationDTO) {
+        return locationRepository
+                .findByPlaceNameAndAddress(locationDTO.placeName(), locationDTO.address())
+                .orElseGet(() -> {
+                    Location newLocation = locationDTO.toEntity();
+                    return locationRepository.save(newLocation);
+                });
     }
 
 
