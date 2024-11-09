@@ -42,6 +42,21 @@ pipeline {
             }
         }
 
+        stage('Debug Environment Variables') {
+            steps {
+                script {
+                    echo "REPO: ${REPO}"
+                    echo "DOCKER_IMAGE_NAME: ${DOCKER_IMAGE_NAME}"
+                    echo "DOCKER_CREDENTIALS_ID: ${DOCKER_CREDENTIALS_ID}"
+                    echo "EC2_USER: ${EC2_USER}"
+                    echo "CONTAINER_NAME: ${CONTAINER_NAME}"
+                    echo "REMOTE_PORT: ${REMOTE_PORT}"
+                    echo "IMAGE_TAG: ${IMAGE_TAG}"
+                    // FLUENTD_ADDRESS는 Deploy 단계에서만 사용되므로 별도 출력 필요
+                }
+            }
+        }
+
         stage('Deploy to BackEnd Server') {
             steps {
                 script {
@@ -49,6 +64,8 @@ pipeline {
                         string(credentialsId: 'back_ip', variable: 'PRIVATE_IP'),
                         string(credentialsId: 'fluentd_address', variable: 'FLUENTD_ADDRESS')
                     ]) {
+                        echo "PRIVATE_IP: ${PRIVATE_IP}"
+                        echo "FLUENTD_ADDRESS: ${FLUENTD_ADDRESS}"
                         sshagent(['ec2_ssh']) {
                             sh """
                             ssh -v -o StrictHostKeyChecking=no ubuntu@${PRIVATE_IP} \\
