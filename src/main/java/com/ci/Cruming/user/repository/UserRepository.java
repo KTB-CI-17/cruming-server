@@ -9,5 +9,5 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-    Optional<User> findByPlatformAndPlatformId(Platform platform, Long platformId);
+    Optional<User> findByPlatformAndPlatformId(Platform platform, String platformId);
 } 
