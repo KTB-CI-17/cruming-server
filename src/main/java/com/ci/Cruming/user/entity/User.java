@@ -31,7 +31,7 @@ public class User {
     private Platform platform;
 
     @Column(name = "platform_id")
-    private Long platformId;
+    private String platformId;
 
     @Column(length = 300)
     private String intro;
@@ -48,7 +48,7 @@ public class User {
     private LocalDateTime deletedAt;
 
 
-    public User(String nickname, Platform platform, Long platformId) {
+    public User(String nickname, Platform platform, String platformId) {
         this.nickname = nickname;
         this.platform = platform;
         this.platformId = platformId;

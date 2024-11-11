@@ -25,9 +25,10 @@ public class AuthService {
         AbstractTokenValidator validator = tokenValidatorFactory.getValidator(platform);
         
         UserProfile profile = validator.validateAndGetProfile(request.socialToken());
+        System.out.println("profile = " + profile);
         User user = userRepository.findByPlatformAndPlatformId(
                 platform,
-                Long.parseLong(profile.getPlatformId())
+                profile.getPlatformId()
             )
             .orElseGet(() -> createUser(profile, platform));
 
@@ -38,7 +39,7 @@ public class AuthService {
         User user = User.builder()
             .nickname(profile.getNickname())
             .platform(platform)
-            .platformId(Long.parseLong(profile.getPlatformId()))
+            .platformId(profile.getPlatformId())
             .build();
         System.out.println("user = " + user);
         return userRepository.save(user);
