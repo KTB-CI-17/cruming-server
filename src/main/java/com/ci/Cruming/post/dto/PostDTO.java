@@ -58,4 +58,20 @@ public record PostDTO(
                 .deletedAt(deletedAt)
                 .build();
     }
+
+    public static PostDTO fromEntity(Post entity) {
+        return new PostDTO(
+                entity.getId(),
+                UserDTO.fromEntity(entity.getUser()),
+                null,
+//                LocationDTO.fromEntity(entity.getLocation()),
+                entity.getLevel(),
+                entity.getCategory(),
+                entity.getTitle(),
+                entity.getContent(),
+                entity.getVisibility(),
+                entity.getCreatedAt(),
+                entity.getDeletedAt()
+        );
+    }
 }

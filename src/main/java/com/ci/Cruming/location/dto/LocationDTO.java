@@ -26,4 +26,15 @@ public record LocationDTO(
                 .createdAt(createdAt)
                 .build();
     }
+
+    public static LocationDTO fromEntity(Location entity) {
+        return new LocationDTO(
+                entity.getId(),
+                entity.getPlaceName(),
+                entity.getAddress(),
+                entity.getLatitude(),
+                entity.getLongitude(),
+                entity.getCreatedAt()
+        );
+    }
 }
