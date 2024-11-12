@@ -13,7 +13,7 @@ public record UserDTO(
         Short height,
         Short armReach,
         Platform platform,
-        Long platformId,
+        String platformId,
         LocationDTO locationDTO,
         UserStatus status,
         LocalDateTime createdAt,
