@@ -5,6 +5,7 @@ import com.ci.Cruming.user.entity.User;
 import com.ci.Cruming.common.constants.Visibility;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -53,4 +54,32 @@ public class Timeline {
 
     @OneToMany(mappedBy = "timeline")
     private List<TimelineReply> replies = new ArrayList<>();
+
+    @Builder
+    public Timeline(User user, Location location, String level, String content, 
+                   Visibility visibility, LocalDateTime activityAt) {
+        this.user = user;
+        this.location = location;
+        this.level = level;
+        this.content = content;
+        this.visibility = visibility;
+        this.activityAt = activityAt;
+        this.createdAt = LocalDateTime.now();
+    }
+    
+    public void delete() {
+        this.deletedAt = LocalDateTime.now();
+    }
+    
+    public boolean isDeleted() {
+        return this.deletedAt != null;
+    }
+    
+    public int getLikeCount() {
+        return this.likes.size();
+    }
+    
+    public int getReplyCount() {
+        return this.replies.size();
+    }
 }
