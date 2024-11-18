@@ -1,6 +1,6 @@
 package com.ci.Cruming.auth.service.validator;
 
-import com.ci.Cruming.user.entity.Platform;
+import com.ci.Cruming.common.constants.Platform;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;

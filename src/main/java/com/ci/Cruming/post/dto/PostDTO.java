@@ -26,9 +26,8 @@ public record PostDTO(
         this(null, userDTO, null, null, category, title, content, Visibility.PUBLIC, null, null);
     }
 
-    public PostDTO(UserDTO userDTO, Category category, String title, String content,
-                   String level, LocationDTO locationDTO) {
-        this(null, userDTO, locationDTO, level, category, title, content, null, null, null);
+    public PostDTO(UserDTO userDTO, LocationDTO locationDTO, String level, Category category, String title, String content) {
+        this(null, userDTO, locationDTO, level, category, title, content, Visibility.PUBLIC, null, null);
     }
 
     public Post toEntity(User user, Location location) {
@@ -58,5 +57,21 @@ public record PostDTO(
                 .createdAt(createdAt)
                 .deletedAt(deletedAt)
                 .build();
+    }
+
+    public static PostDTO fromEntity(Post entity) {
+        return new PostDTO(
+                entity.getId(),
+                UserDTO.fromEntity(entity.getUser()),
+                null,
+//                LocationDTO.fromEntity(entity.getLocation()),
+                entity.getLevel(),
+                entity.getCategory(),
+                entity.getTitle(),
+                entity.getContent(),
+                entity.getVisibility(),
+                entity.getCreatedAt(),
+                entity.getDeletedAt()
+        );
     }
 }

@@ -1,8 +1,14 @@
 package com.ci.Cruming.user.entity;
 
 
+import com.ci.Cruming.location.entity.Location;
 import jakarta.persistence.*;
 import lombok.*;
+import com.ci.Cruming.common.constants.Platform;
+import com.ci.Cruming.common.constants.UserStatus;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -11,6 +17,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
 @ToString
 public class User {
     
@@ -36,13 +43,18 @@ public class User {
     @Column(length = 300)
     private String intro;
 
-    @Column(name = "home_gym")
-    private Long homeGym;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "home_gym", nullable = false)
+    private Location homeGym;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default
     private UserStatus status = UserStatus.ACTIVE;
+
+    @CreatedDate
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
