@@ -5,7 +5,7 @@ import com.ci.Cruming.auth.dto.TokenResponse;
 import com.ci.Cruming.auth.dto.UserProfile;
 import com.ci.Cruming.auth.service.validator.AbstractTokenValidator;
 import com.ci.Cruming.auth.service.validator.TokenValidatorFactory;
-import com.ci.Cruming.user.entity.Platform;
+import com.ci.Cruming.common.constants.Platform;
 import com.ci.Cruming.user.entity.User;
 import com.ci.Cruming.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;

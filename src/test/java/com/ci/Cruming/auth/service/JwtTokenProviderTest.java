@@ -1,7 +1,7 @@
 package com.ci.Cruming.auth.service;
 
 import com.ci.Cruming.auth.dto.TokenResponse;
-import com.ci.Cruming.user.entity.Platform;
+import com.ci.Cruming.common.constants.Platform;
 import com.ci.Cruming.user.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
