@@ -1,6 +1,7 @@
 package com.ci.Cruming.post.service;
 
 import com.ci.Cruming.common.constants.Category;
+import com.ci.Cruming.common.constants.Visibility;
 import com.ci.Cruming.common.exception.CrumingException;
 import com.ci.Cruming.common.exception.ErrorCode;
 import com.ci.Cruming.location.dto.LocationRequest;
@@ -275,6 +276,96 @@ class PostServiceTest {
         verify(postRepository).findById(postId);
         verifyNoMoreInteractions(postRepository);
         verifyNoInteractions(locationService, postValidator);
+    }
+
+    @Test
+    @DisplayName("게시글 삭제 - 성공")
+    void deletePost_Success() {
+        // given
+        Long postId = 1L;
+        User user = User.builder()
+                .id(1L)
+                .build();
+
+        Post post = Post.builder()
+                .id(postId)
+                .user(user)
+                .title("제목")
+                .content("내용")
+                .category(Category.GENERAL)
+                .visibility(Visibility.PUBLIC)
+                .build();
+
+        // when
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+        doNothing().when(postValidator).validatePostAuthor(any(), any());
+
+        postService.deletePost(user, postId);
+
+        // then
+        verify(postRepository).findById(postId);
+        verify(postValidator).validatePostAuthor(any(), any());
+        verify(postRepository).delete(post);
+        verifyNoMoreInteractions(postRepository, postValidator);
+    }
+
+    @Test
+    @DisplayName("게시글 삭제 - 게시글 없음 실패")
+    void deletePost_PostNotFound() {
+        // given
+        Long postId = 1L;
+        User user = User.builder()
+                .id(1L)
+                .build();
+
+        // when
+        when(postRepository.findById(postId)).thenReturn(Optional.empty());
+
+        // then
+        assertThatThrownBy(() -> postService.deletePost(user, postId))
+                .isInstanceOf(CrumingException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.POST_NOT_FOUND);
+
+        verify(postRepository).findById(postId);
+        verifyNoMoreInteractions(postRepository);
+        verifyNoInteractions(postValidator);
+    }
+
+    @Test
+    @DisplayName("게시글 삭제 - 작성자 불일치로 실패")
+    void deletePost_NotAuthor() {
+        // given
+        Long postId = 1L;
+        User author = User.builder()
+                .id(1L)
+                .build();
+
+        User otherUser = User.builder()
+                .id(2L)
+                .build();
+
+        Post post = Post.builder()
+                .id(postId)
+                .user(author)
+                .title("제목")
+                .content("내용")
+                .category(Category.GENERAL)
+                .visibility(Visibility.PUBLIC)
+                .build();
+
+        // when
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+        doThrow(new CrumingException(ErrorCode.POST_NOT_AUTHORIZED))
+                .when(postValidator).validatePostAuthor(any(), any());
+
+        // then
+        assertThatThrownBy(() -> postService.deletePost(otherUser, postId))
+                .isInstanceOf(CrumingException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.POST_NOT_AUTHORIZED);
+
+        verify(postRepository).findById(postId);
+        verify(postValidator).validatePostAuthor(any(), any());
+        verifyNoMoreInteractions(postRepository, postValidator);
     }
 
     @Test
