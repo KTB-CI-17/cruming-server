@@ -7,8 +7,4 @@ public record PostListResponse(
         String title,
         LocalDateTime createdAt
 ) {
-
-    public static PostListResponse from(PostDTO dto) {
-        return new PostListResponse(dto.id(), dto.title(), dto.createdAt());
-    }
 }
