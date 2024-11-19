@@ -3,6 +3,7 @@ package com.ci.Cruming.post.service;
 import com.ci.Cruming.common.exception.CrumingException;
 import com.ci.Cruming.common.exception.ErrorCode;
 import com.ci.Cruming.post.dto.PostReplyRequest;
+import com.ci.Cruming.post.dto.PostReplyResponse;
 import com.ci.Cruming.post.dto.mapper.PostReplyMapper;
 import com.ci.Cruming.post.entity.Post;
 import com.ci.Cruming.post.entity.PostReply;
@@ -18,6 +19,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
@@ -367,6 +372,101 @@ class PostReplyServiceTest {
             assertThat(parentReply.getDeletedAt()).isNotNull();
             assertThat(parentReply.getChildren())
                     .allMatch(child -> child.getDeletedAt() != null);
+        }
+    }
+
+    @Nested
+    @DisplayName("댓글 목록 조회")
+    class FindPostReplyList {
+        @Test
+        @DisplayName("댓글 및 대댓글 목록 조회 - 성공")
+        void findPostReplyList_Success() {
+            PageRequest pageRequest = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
+            List<PostReply> parentReplies = List.of(
+                    createPostReply(1L, "parent1"),
+                    createPostReply(2L, "parent2")
+            );
+            List<PostReply> childReplies = List.of(
+                    createPostReply(3L, "child1"),
+                    createPostReply(4L, "child2")
+            );
+            Page<PostReply> parentPage = new PageImpl<>(parentReplies, pageRequest, 2);
+            Page<PostReply> childPage = new PageImpl<>(childReplies, PageRequest.of(0, 5), 2);
+
+            given(postReplyRepository.findByPostIdAndParentIsNull(1L, pageRequest)).willReturn(parentPage);
+            given(postReplyRepository.findByParentId(anyLong(), any())).willReturn(childPage);
+            given(postReplyMapper.toChildPostReplyResponse(any())).willAnswer(i -> {
+                PostReply reply = i.getArgument(0);
+                return new PostReplyResponse(
+                        reply.getId(),
+                        reply.getContent(),
+                        reply.getCreatedAt(),
+                        null,
+                        "nickname",
+                        List.of()
+                );
+            });
+            given(postReplyMapper.toParentPostReplyResponse(any(), any())).willAnswer(i -> {
+                PostReply reply = i.getArgument(0);
+                List<PostReplyResponse> children = i.getArgument(1);
+                return new PostReplyResponse(
+                        reply.getId(),
+                        reply.getContent(),
+                        reply.getCreatedAt(),
+                        null,
+                        "nickname",
+                        children
+                );
+            });
+
+            Page<PostReplyResponse> result = postReplyService.findPostReplyList(pageRequest, 1L);
+
+            assertThat(result.getContent()).hasSize(2);
+            assertThat(result.getContent().get(0).children()).hasSize(2);
+            verify(postReplyRepository).findByPostIdAndParentIsNull(1L, pageRequest);
+            verify(postReplyRepository, times(2)).findByParentId(anyLong(), any());
+            verify(postReplyMapper, times(4)).toChildPostReplyResponse(any());
+            verify(postReplyMapper, times(2)).toParentPostReplyResponse(any(), any());
+        }
+
+        @Test
+        @DisplayName("대댓글만 목록 조회 - 성공")
+        void findChildReplyList_Success() {
+            PageRequest pageRequest = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "createdAt"));
+            List<PostReply> childReplies = List.of(
+                    createPostReply(1L, "child1"),
+                    createPostReply(2L, "child2")
+            );
+            Page<PostReply> childPage = new PageImpl<>(childReplies, pageRequest, 2);
+
+            given(postReplyRepository.findByParentId(1L, pageRequest)).willReturn(childPage);
+            given(postReplyMapper.toChildPostReplyResponse(any())).willAnswer(i -> {
+                PostReply reply = i.getArgument(0);
+                return new PostReplyResponse(
+                        reply.getId(),
+                        reply.getContent(),
+                        reply.getCreatedAt(),
+                        null,
+                        "nickname",
+                        List.of()
+                );
+            });
+
+            Page<PostReplyResponse> result = postReplyService.findPostChildReplyList(1L, pageRequest);
+
+            assertThat(result.getContent()).hasSize(2);
+            verify(postReplyRepository).findByParentId(1L, pageRequest);
+            verify(postReplyMapper, times(2)).toChildPostReplyResponse(any());
+        }
+
+        private PostReply createPostReply(Long id, String content) {
+            PostReply reply = PostReply.builder()
+                    .content(content)
+                    .user(User.builder().nickname("nickname").build())
+                    .build();
+            ReflectionTestUtils.setField(reply, "id", id);
+            ReflectionTestUtils.setField(reply, "createdAt", LocalDateTime.now());
+            return reply;
         }
     }
 }
