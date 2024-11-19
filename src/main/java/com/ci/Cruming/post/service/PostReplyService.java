@@ -39,16 +39,10 @@ public class PostReplyService {
     }
 
     @Transactional
-    public void updatePostReply(User user, PostReplyRequest request, Long postId, Long replyId) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new CrumingException(ErrorCode.POST_NOT_FOUND));
+    public void updatePostReply(User user, PostReplyRequest request, Long replyId) {
         PostReply reply = postReplyRepository.findById(replyId)
                 .orElseThrow(() -> new CrumingException(ErrorCode.REPLY_NOT_FOUND));
         postReplyValidator.validatePostReplyRequest(request);
-
-        if (!reply.getPost().equals(post)) {
-            throw new CrumingException(ErrorCode.INVALID_REPLY_AND_POST);
-        }
 
         if (!reply.getUser().equals(user)) {
             throw new CrumingException(ErrorCode.POST_REPLY_NOT_AUTHORIZED);
