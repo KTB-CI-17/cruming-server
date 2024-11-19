@@ -84,11 +84,8 @@ class PostServiceTest {
     @DisplayName("일반 게시글 작성 - 제목 길이 초과 실패")
     void createGeneral_TitleLengthExceeded() {
         // given
-        User user = User.builder()
-                .id(1L)
-                .build();
-
-        String longTitle = "a".repeat(101);
+        User user = User.builder().id(1L).build();
+        String longTitle = "한글ABC特🎉".repeat(20);
         PostGeneralRequest request = new PostGeneralRequest(longTitle, "내용");
 
         // when
@@ -108,11 +105,8 @@ class PostServiceTest {
     @DisplayName("일반 게시글 작성 - 내용 길이 초과 실패")
     void createGeneral_ContentLengthExceeded() {
         // given
-        User user = User.builder()
-                .id(1L)
-                .build();
-
-        String longContent = "a".repeat(1001);
+        User user = User.builder().id(1L).build();
+        String longContent = "한글ABC特🎉".repeat(200);
         PostGeneralRequest request = new PostGeneralRequest("제목", longContent);
 
         // when
@@ -182,7 +176,7 @@ class PostServiceTest {
                 .id(1L)
                 .build();
 
-        String longTitle = "a".repeat(101);
+        String longTitle = "한글ABC特🎉".repeat(20);
         PostProblemRequest request = new PostProblemRequest(
                 longTitle,
                 "내용",
@@ -211,7 +205,7 @@ class PostServiceTest {
                 .id(1L)
                 .build();
 
-        String longContent = "a".repeat(1001);
+        String longContent = "한글ABC特🎉".repeat(200);
         PostProblemRequest request = new PostProblemRequest(
                 "제목",
                 longContent,
@@ -236,11 +230,8 @@ class PostServiceTest {
     @DisplayName("문제 게시글 작성 - 레벨 길이 초과 실패")
     void createProblem_LevelLengthExceeded() {
         // given
-        User user = User.builder()
-                .id(1L)
-                .build();
-
-        String longLevel = "#" + "1".repeat(50);
+        User user = User.builder().id(1L).build();
+        String longLevel = "#한글ABC特🎉".repeat(10);
         PostProblemRequest request = new PostProblemRequest(
                 "제목",
                 "내용",
