@@ -10,6 +10,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Entity
 @Table(name = "users")
@@ -59,10 +60,25 @@ public class User {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
-
     public User(String nickname, Platform platform, String platformId) {
         this.nickname = nickname;
         this.platform = platform;
         this.platformId = platformId;
     }
-} 
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        User user = (User) o;
+        return Objects.equals(getId(), user.getId()) &&
+                getPlatform() == user.getPlatform() &&
+                Objects.equals(getPlatformId(), user.getPlatformId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, platform, platformId);
+    }
+}

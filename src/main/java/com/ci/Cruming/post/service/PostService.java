@@ -3,15 +3,15 @@ package com.ci.Cruming.post.service;
 import com.ci.Cruming.common.constants.Category;
 import com.ci.Cruming.common.exception.CrumingException;
 import com.ci.Cruming.common.exception.ErrorCode;
-import com.ci.Cruming.location.dto.LocationDTO;
 import com.ci.Cruming.location.entity.Location;
-import com.ci.Cruming.location.repository.LocationRepository;
+import com.ci.Cruming.location.service.LocationService;
+import com.ci.Cruming.post.dto.PostListResponse;
+import com.ci.Cruming.post.dto.PostProblemRequest;
+import com.ci.Cruming.post.dto.PostGeneralRequest;
+import com.ci.Cruming.post.dto.mapper.PostMapper;
 import com.ci.Cruming.post.entity.Post;
-import com.ci.Cruming.post.dto.PostDTO;
+import com.ci.Cruming.post.service.validator.PostValidator;
 import com.ci.Cruming.user.entity.User;
-import com.ci.Cruming.user.repository.UserRepository;
-import com.ci.Cruming.post.repository.PostLikeRepository;
-import com.ci.Cruming.post.repository.PostReplyRepository;
 import com.ci.Cruming.post.repository.PostRepository;
 
 import lombok.extern.slf4j.Slf4j;
@@ -24,45 +24,61 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 public class PostService {
 
-    private final UserRepository userRepository;
     private final PostRepository postRepository;
-    private final PostLikeRepository postLikeRepository;
-    private final PostReplyRepository postReplyRepository;
-    private final LocationRepository locationRepository;
+    private final LocationService locationService;
+    private final PostValidator postValidator;
+    private final PostMapper postMapper;
 
-    @Transactional(readOnly = false)
-    public Long savePost(PostDTO postDTO) {
-        User user = userRepository.getReferenceById(postDTO.userDTO().id());
-        Post post = postDTO.toEntity(user);
-        log.info("post={}", post.toString());
+    @Transactional
+    public void createGeneral(User user, PostGeneralRequest request) {
+        postValidator.validatePostGeneralRequest(request);
+        Post post = postMapper.toGeneralPost(user, request);
         postRepository.save(post);
-
-        return post.getId();
     }
 
-    @Transactional(readOnly = false)
-    public Long savePostProblem(PostDTO postDTO) {
-        User user = userRepository.getReferenceById(postDTO.userDTO().id());
-        Location location = getOrCreateLocation(postDTO.locationDTO());
-        Post post = postDTO.toEntity(user, location);
+    @Transactional
+    public void createProblem(User user, PostProblemRequest request) {
+        postValidator.validatePostProblemRequest(request);
+        Location location = locationService.getOrCreateLocation(request.location());
+        Post post = postMapper.toProblemPost(user, request, location);
+
         postRepository.save(post);
-        return post.getId();
     }
 
-    public Page<PostDTO> findPostList(Pageable pageable, Category category) {
-        return postRepository.findByCategoryOrderByCreatedAtDesc(pageable, category).map(PostDTO::fromEntity);
+    @Transactional
+    public void updateGeneral(User user, Long postId, PostGeneralRequest request) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new CrumingException(ErrorCode.POST_NOT_FOUND));
+        postValidator.validatePostAuthor(post, user);
+        postValidator.validatePostGeneralRequest(request);
+
+        post.update(request.title(), request.content());
     }
 
-    private Location getOrCreateLocation(LocationDTO locationDTO) {
-        return locationRepository
-                .findByPlaceNameAndAddress(locationDTO.placeName(), locationDTO.address())
-                .orElseGet(() -> {
-                    Location newLocation = locationDTO.toEntity();
-                    return locationRepository.save(newLocation);
-                });
+    @Transactional
+    public void updateProblem(User user, Long postId, PostProblemRequest request) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new CrumingException(ErrorCode.POST_NOT_FOUND));
+        postValidator.validatePostAuthor(post, user);
+        postValidator.validatePostProblemRequest(request);
+
+        Location location = locationService.getOrCreateLocation(request.location());
+        post.update(request.title(), request.content(), request.level(), location);
     }
 
+    @Transactional
+    public void deletePost(User user, Long postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new CrumingException(ErrorCode.POST_NOT_FOUND));
+        postValidator.validatePostAuthor(post, user);
+        postRepository.delete(post);
+    }
+
+    public Page<PostListResponse> findPostList(Pageable pageable, Category category) {
+        return postRepository.findByPostInCategory(pageable, category)
+                .map(postMapper::toPostListResponse);
+    }
 }
