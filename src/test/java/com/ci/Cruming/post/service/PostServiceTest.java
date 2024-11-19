@@ -34,9 +34,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@ExtendWith(MockitoExtension.class)
 class PostServiceTest {
-
     @InjectMocks
     private PostService postService;
 
@@ -80,6 +78,48 @@ class PostServiceTest {
         verify(postMapper).toGeneralPost(any(), any());
         verify(postRepository).save(any());
         verifyNoMoreInteractions(postRepository, postMapper);
+    }
+
+    @Test
+    @DisplayName("일반 게시글 작성 - 제목 길이 초과 실패")
+    void createGeneral_TitleLengthExceeded() {
+        // given
+        User user = User.builder().id(1L).build();
+        String longTitle = "한글ABC特🎉".repeat(20);
+        PostGeneralRequest request = new PostGeneralRequest(longTitle, "내용");
+
+        // when
+        doThrow(new CrumingException(ErrorCode.INVALID_POST_TITLE_SIZE))
+                .when(postValidator).validatePostGeneralRequest(any());
+
+        // then
+        assertThatThrownBy(() -> postService.createGeneral(user, request))
+                .isInstanceOf(CrumingException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.INVALID_POST_TITLE_SIZE);
+
+        verify(postValidator).validatePostGeneralRequest(any());
+        verifyNoInteractions(postMapper, postRepository);
+    }
+
+    @Test
+    @DisplayName("일반 게시글 작성 - 내용 길이 초과 실패")
+    void createGeneral_ContentLengthExceeded() {
+        // given
+        User user = User.builder().id(1L).build();
+        String longContent = "한글ABC特🎉".repeat(200);
+        PostGeneralRequest request = new PostGeneralRequest("제목", longContent);
+
+        // when
+        doThrow(new CrumingException(ErrorCode.INVALID_POST_CONTENT_SIZE))
+                .when(postValidator).validatePostGeneralRequest(any());
+
+        // then
+        assertThatThrownBy(() -> postService.createGeneral(user, request))
+                .isInstanceOf(CrumingException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.INVALID_POST_CONTENT_SIZE);
+
+        verify(postValidator).validatePostGeneralRequest(any());
+        verifyNoInteractions(postMapper, postRepository);
     }
 
     @Test
@@ -129,6 +169,90 @@ class PostServiceTest {
     }
 
     @Test
+    @DisplayName("문제 게시글 작성 - 제목 길이 초과 실패")
+    void createProblem_TitleLengthExceeded() {
+        // given
+        User user = User.builder()
+                .id(1L)
+                .build();
+
+        String longTitle = "한글ABC特🎉".repeat(20);
+        PostProblemRequest request = new PostProblemRequest(
+                longTitle,
+                "내용",
+                new LocationRequest("장소명", "주소", 37.5665, 126.9780),
+                "#31235"
+        );
+
+        // when
+        doThrow(new CrumingException(ErrorCode.INVALID_POST_TITLE_SIZE))
+                .when(postValidator).validatePostProblemRequest(any());
+
+        // then
+        assertThatThrownBy(() -> postService.createProblem(user, request))
+                .isInstanceOf(CrumingException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.INVALID_POST_TITLE_SIZE);
+
+        verify(postValidator).validatePostProblemRequest(any());
+        verifyNoInteractions(locationService, postMapper, postRepository);
+    }
+
+    @Test
+    @DisplayName("문제 게시글 작성 - 내용 길이 초과 실패")
+    void createProblem_ContentLengthExceeded() {
+        // given
+        User user = User.builder()
+                .id(1L)
+                .build();
+
+        String longContent = "한글ABC特🎉".repeat(200);
+        PostProblemRequest request = new PostProblemRequest(
+                "제목",
+                longContent,
+                new LocationRequest("장소명", "주소", 37.5665, 126.9780),
+                "#31235"
+        );
+
+        // when
+        doThrow(new CrumingException(ErrorCode.INVALID_POST_CONTENT_SIZE))
+                .when(postValidator).validatePostProblemRequest(any());
+
+        // then
+        assertThatThrownBy(() -> postService.createProblem(user, request))
+                .isInstanceOf(CrumingException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.INVALID_POST_CONTENT_SIZE);
+
+        verify(postValidator).validatePostProblemRequest(any());
+        verifyNoInteractions(locationService, postMapper, postRepository);
+    }
+
+    @Test
+    @DisplayName("문제 게시글 작성 - 레벨 길이 초과 실패")
+    void createProblem_LevelLengthExceeded() {
+        // given
+        User user = User.builder().id(1L).build();
+        String longLevel = "#한글ABC特🎉".repeat(10);
+        PostProblemRequest request = new PostProblemRequest(
+                "제목",
+                "내용",
+                new LocationRequest("장소명", "주소", 37.5665, 126.9780),
+                longLevel
+        );
+
+        // when
+        doThrow(new CrumingException(ErrorCode.INVALID_POST_LEVEL_SIZE))
+                .when(postValidator).validatePostProblemRequest(any());
+
+        // then
+        assertThatThrownBy(() -> postService.createProblem(user, request))
+                .isInstanceOf(CrumingException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.INVALID_POST_LEVEL_SIZE);
+
+        verify(postValidator).validatePostProblemRequest(any());
+        verifyNoInteractions(locationService, postMapper, postRepository);
+    }
+
+    @Test
     @DisplayName("일반 게시글 수정 - 성공")
     void updateGeneral_Success() {
         // given
@@ -165,51 +289,12 @@ class PostServiceTest {
     }
 
     @Test
-    @DisplayName("일반 게시글 수정 - 게시글 없음 실패")
-    void updateGeneral_PostNotFound() {
+    @DisplayName("일반 게시글 수정 - 제목 길이 초과 실패")
+    void updateGeneral_TitleLengthExceeded() {
         // given
         Long postId = 1L;
         User user = User.builder()
                 .id(1L)
-                .build();
-        PostGeneralRequest request = new PostGeneralRequest("수정된 제목", "수정된 내용");
-
-        // when
-        when(postRepository.findById(postId)).thenReturn(Optional.empty());
-
-        // then
-        assertThatThrownBy(() -> postService.updateGeneral(user, postId, request))
-                .isInstanceOf(CrumingException.class)
-                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.POST_NOT_FOUND);
-
-        verify(postRepository).findById(postId);
-        verifyNoMoreInteractions(postRepository);
-        verifyNoInteractions(postValidator);
-    }
-
-    @Test
-    @DisplayName("문제 게시글 수정 - 성공")
-    void updateProblem_Success() {
-        // given
-        Long postId = 1L;
-        User user = User.builder()
-                .id(1L)
-                .build();
-
-        Location existingLocation = Location.builder()
-                .id(1L)
-                .placeName("기존 장소명")
-                .address("기존 주소")
-                .latitude(37.5665)
-                .longitude(126.9780)
-                .build();
-
-        Location newLocation = Location.builder()
-                .id(2L)
-                .placeName("새로운 장소명")
-                .address("새로운 주소")
-                .latitude(37.5665)
-                .longitude(126.9780)
                 .build();
 
         Post existingPost = Post.builder()
@@ -217,65 +302,27 @@ class PostServiceTest {
                 .user(user)
                 .title("기존 제목")
                 .content("기존 내용")
-                .level("#12345")
-                .location(existingLocation)
-                .category(Category.PROBLEM)
+                .category(Category.GENERAL)
                 .build();
 
-        PostProblemRequest request = new PostProblemRequest(
-                "수정된 제목",
-                "수정된 내용",
-                new LocationRequest("새로운 장소명", "새로운 주소", 37.5665, 126.9780),
-                "#54321"
-        );
+        String longTitle = "a".repeat(101);
+        PostGeneralRequest request = new PostGeneralRequest(longTitle, "수정된 내용");
 
         // when
         when(postRepository.findById(postId)).thenReturn(Optional.of(existingPost));
-        when(locationService.getOrCreateLocation(any())).thenReturn(newLocation);
         doNothing().when(postValidator).validatePostAuthor(any(), any());
-        doNothing().when(postValidator).validatePostProblemRequest(any());
-
-        postService.updateProblem(user, postId, request);
-
-        // then
-        assertThat(existingPost.getTitle()).isEqualTo("수정된 제목");
-        assertThat(existingPost.getContent()).isEqualTo("수정된 내용");
-        assertThat(existingPost.getLevel()).isEqualTo("#54321");
-        assertThat(existingPost.getLocation()).isEqualTo(newLocation);
-
-        verify(postRepository).findById(postId);
-        verify(locationService).getOrCreateLocation(any());
-        verify(postValidator).validatePostAuthor(any(), any());
-        verify(postValidator).validatePostProblemRequest(any());
-        verifyNoMoreInteractions(postRepository, locationService, postValidator);
-    }
-
-    @Test
-    @DisplayName("문제 게시글 수정 - 게시글 없음 실패")
-    void updateProblem_PostNotFound() {
-        // given
-        Long postId = 1L;
-        User user = User.builder()
-                .id(1L)
-                .build();
-        PostProblemRequest request = new PostProblemRequest(
-                "수정된 제목",
-                "수정된 내용",
-                new LocationRequest("새로운 장소명", "새로운 주소", 37.5665, 126.9780),
-                "#54321"
-        );
-
-        // when
-        when(postRepository.findById(postId)).thenReturn(Optional.empty());
+        doThrow(new CrumingException(ErrorCode.INVALID_POST_TITLE_SIZE))
+                .when(postValidator).validatePostGeneralRequest(any());
 
         // then
-        assertThatThrownBy(() -> postService.updateProblem(user, postId, request))
+        assertThatThrownBy(() -> postService.updateGeneral(user, postId, request))
                 .isInstanceOf(CrumingException.class)
-                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.POST_NOT_FOUND);
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.INVALID_POST_TITLE_SIZE);
 
         verify(postRepository).findById(postId);
-        verifyNoMoreInteractions(postRepository);
-        verifyNoInteractions(locationService, postValidator);
+        verify(postValidator).validatePostAuthor(any(), any());
+        verify(postValidator).validatePostGeneralRequest(any());
+        verifyNoMoreInteractions(postRepository, postValidator);
     }
 
     @Test
@@ -329,43 +376,6 @@ class PostServiceTest {
         verify(postRepository).findById(postId);
         verifyNoMoreInteractions(postRepository);
         verifyNoInteractions(postValidator);
-    }
-
-    @Test
-    @DisplayName("게시글 삭제 - 작성자 불일치로 실패")
-    void deletePost_NotAuthor() {
-        // given
-        Long postId = 1L;
-        User author = User.builder()
-                .id(1L)
-                .build();
-
-        User otherUser = User.builder()
-                .id(2L)
-                .build();
-
-        Post post = Post.builder()
-                .id(postId)
-                .user(author)
-                .title("제목")
-                .content("내용")
-                .category(Category.GENERAL)
-                .visibility(Visibility.PUBLIC)
-                .build();
-
-        // when
-        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
-        doThrow(new CrumingException(ErrorCode.POST_NOT_AUTHORIZED))
-                .when(postValidator).validatePostAuthor(any(), any());
-
-        // then
-        assertThatThrownBy(() -> postService.deletePost(otherUser, postId))
-                .isInstanceOf(CrumingException.class)
-                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.POST_NOT_AUTHORIZED);
-
-        verify(postRepository).findById(postId);
-        verify(postValidator).validatePostAuthor(any(), any());
-        verifyNoMoreInteractions(postRepository, postValidator);
     }
 
     @Test

@@ -180,13 +180,15 @@ class PostReplyServiceTest {
         @Test
         @DisplayName("댓글 작성 - 내용 길이 초과 실패")
         void createPostReply_ContentTooLong() {
-            String longContent = "안녕Hello🎉!".repeat(100);
+            // given
+            String longContent = "한글🎉EN".repeat(500);
             PostReplyRequest invalidRequest = new PostReplyRequest(longContent);
 
             given(postRepository.findById(post.getId())).willReturn(Optional.of(post));
             doThrow(new CrumingException(ErrorCode.INVALID_REPLY_SIZE))
                     .when(postReplyValidator).validatePostReplyRequest(invalidRequest);
 
+            // when & then
             assertThatThrownBy(() -> postReplyService.createPostReply(user, invalidRequest, post.getId(), null))
                     .isInstanceOf(CrumingException.class)
                     .hasFieldOrPropertyWithValue("errorCode", ErrorCode.INVALID_REPLY_SIZE);
@@ -195,7 +197,8 @@ class PostReplyServiceTest {
         @Test
         @DisplayName("댓글 작성 - 내용 길이 정상")
         void createPostReply_WithValidContent_Success() {
-            String validContent = "안녕Hello🎉!".repeat(90);
+            // given
+            String validContent = "한글🎉EN".repeat(300);
             PostReplyRequest validContentRequest = new PostReplyRequest(validContent);
 
             given(postRepository.findById(post.getId())).willReturn(Optional.of(post));
@@ -203,8 +206,10 @@ class PostReplyServiceTest {
                     .willReturn(PostReply.builder().build());
             doNothing().when(postReplyValidator).validatePostReplyRequest(any());
 
+            // when
             postReplyService.createPostReply(user, validContentRequest, post.getId(), null);
 
+            // then
             verify(postReplyRepository).save(any(PostReply.class));
             verify(postReplyValidator).validatePostReplyRequest(validContentRequest);
         }
@@ -261,18 +266,20 @@ class PostReplyServiceTest {
         @Test
         @DisplayName("댓글 수정 - 내용 길이 초과 실패")
         void updatePostReply_ContentTooLong() {
+            // given
             PostReply reply = PostReply.builder()
                     .id(1L)
                     .user(user)
                     .build();
             given(postReplyRepository.findById(reply.getId())).willReturn(Optional.of(reply));
 
-            String longContent = "안녕Hello🎉!".repeat(100);
+            String longContent = "한글🎉EN".repeat(500);
             PostReplyRequest invalidRequest = new PostReplyRequest(longContent);
 
             doThrow(new CrumingException(ErrorCode.INVALID_REPLY_SIZE))
                     .when(postReplyValidator).validatePostReplyRequest(invalidRequest);
 
+            // when & then
             assertThatThrownBy(() -> postReplyService.updatePostReply(user, invalidRequest, reply.getId()))
                     .isInstanceOf(CrumingException.class)
                     .hasFieldOrPropertyWithValue("errorCode", ErrorCode.INVALID_REPLY_SIZE);
