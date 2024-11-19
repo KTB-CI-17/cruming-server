@@ -3,6 +3,8 @@ package com.ci.Cruming.post.service.validator;
 import com.ci.Cruming.common.exception.CrumingException;
 import com.ci.Cruming.common.exception.ErrorCode;
 import com.ci.Cruming.post.dto.PostReplyRequest;
+import com.ci.Cruming.post.entity.PostReply;
+import com.ci.Cruming.user.entity.User;
 import org.springframework.stereotype.Component;
 
 import java.io.UnsupportedEncodingException;
@@ -21,6 +23,12 @@ public class PostReplyValidator {
 
         if (request.content().getBytes(StandardCharsets.UTF_8).length > 500 * 3) {
             throw new CrumingException(ErrorCode.INVALID_REPLY_SIZE);
+        }
+    }
+
+    public void validatePostReplyAuthor(PostReply postReply, User user) {
+        if (!postReply.getUser().equals(user)) {
+            throw new CrumingException(ErrorCode.POST_REPLY_NOT_AUTHORIZED);
         }
     }
 }
