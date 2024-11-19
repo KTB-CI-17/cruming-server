@@ -18,8 +18,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -322,6 +324,49 @@ class PostReplyServiceTest {
             assertThatThrownBy(() -> postReplyService.deletePostReply(user, reply.getId()))
                     .isInstanceOf(CrumingException.class)
                     .hasFieldOrPropertyWithValue("errorCode", ErrorCode.POST_REPLY_NOT_AUTHORIZED);
+        }
+
+        @Test
+        @DisplayName("댓글 삭제 - 대댓글도 삭제 성공")
+        void deletePostReply_WithChildren_Success() {
+            // given
+            PostReply childReply1 = PostReply.builder()
+                    .id(2L)
+                    .user(user)
+                    .build();
+            ReflectionTestUtils.setField(childReply1, "deletedAt", null);
+
+            PostReply childReply2 = PostReply.builder()
+                    .id(3L)
+                    .user(user)
+                    .build();
+            ReflectionTestUtils.setField(childReply2, "deletedAt", null);
+
+            PostReply parentReply = PostReply.builder()
+                    .id(1L)
+                    .user(user)
+                    .children(List.of(childReply1, childReply2))
+                    .build();
+            ReflectionTestUtils.setField(parentReply, "deletedAt", null);
+
+            given(postReplyRepository.findById(parentReply.getId())).willReturn(Optional.of(parentReply));
+            doAnswer(invocation -> {
+                PostReply reply = invocation.getArgument(0);
+                ReflectionTestUtils.setField(reply, "deletedAt", LocalDateTime.now());
+                reply.getChildren().forEach(child ->
+                        ReflectionTestUtils.setField(child, "deletedAt", LocalDateTime.now())
+                );
+                return null;
+            }).when(postReplyRepository).delete(parentReply);
+
+            // when
+            postReplyService.deletePostReply(user, parentReply.getId());
+
+            // then
+            verify(postReplyRepository).delete(parentReply);
+            assertThat(parentReply.getDeletedAt()).isNotNull();
+            assertThat(parentReply.getChildren())
+                    .allMatch(child -> child.getDeletedAt() != null);
         }
     }
 }
