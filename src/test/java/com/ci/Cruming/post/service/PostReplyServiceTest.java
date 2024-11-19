@@ -22,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -183,7 +184,7 @@ class PostReplyServiceTest {
             // when & then
             assertThatThrownBy(() -> postReplyService.createPostReply(user, validRequest, post.getId(), invalidParentReply.getId()))
                     .isInstanceOf(CrumingException.class)
-                    .hasFieldOrPropertyWithValue("errorCode", ErrorCode.INVALID_PARENT_REPLY_AND_POST);
+                    .hasFieldOrPropertyWithValue("errorCode", ErrorCode.INVALID_REPLY_AND_POST);
 
             verify(postRepository).findById(post.getId());
             verify(postReplyRepository).findById(invalidParentReply.getId());
@@ -230,5 +231,114 @@ class PostReplyServiceTest {
             verify(postReplyRepository).save(any(PostReply.class));
             verify(postReplyValidator).validatePostReplyRequest(validRequest);
         }
+
+
+        @Test
+        @DisplayName("댓글 수정 - 성공")
+        void updatePostReply_Success() {
+            // given
+            given(postRepository.findById(post.getId())).willReturn(Optional.of(post));
+            PostReply reply = PostReply.builder()
+                    .id(1L)
+                    .post(post)
+                    .user(user)
+                    .content("Original content")
+                    .build();
+            given(postReplyRepository.findById(reply.getId())).willReturn(Optional.of(reply));
+
+            // when
+            postReplyService.updatePostReply(user, validRequest, post.getId(), reply.getId());
+
+            // then
+            verify(postReplyValidator).validatePostReplyRequest(validRequest);
+            assertThat(reply.getContent()).isEqualTo(validRequest.content());
+        }
+
+        @Test
+        @DisplayName("댓글 수정 - 게시글 없음 실패")
+        void updatePostReply_PostNotFound() {
+            // given
+            given(postRepository.findById(post.getId())).willReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> postReplyService.updatePostReply(user, validRequest, post.getId(), 1L))
+                    .isInstanceOf(CrumingException.class)
+                    .hasFieldOrPropertyWithValue("errorCode", ErrorCode.POST_NOT_FOUND);
+        }
+
+        @Test
+        @DisplayName("댓글 수정 - 댓글 없음 실패")
+        void updatePostReply_ReplyNotFound() {
+            // given
+            given(postRepository.findById(post.getId())).willReturn(Optional.of(post));
+            given(postReplyRepository.findById(1L)).willReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> postReplyService.updatePostReply(user, validRequest, post.getId(), 1L))
+                    .isInstanceOf(CrumingException.class)
+                    .hasFieldOrPropertyWithValue("errorCode", ErrorCode.REPLY_NOT_FOUND);
+        }
+
+        @Test
+        @DisplayName("댓글 수정 - 다른 게시글의 댓글인 경우 실패")
+        void updatePostReply_InvalidReplyPost() {
+            // given
+            given(postRepository.findById(post.getId())).willReturn(Optional.of(post));
+            PostReply reply = PostReply.builder()
+                    .id(1L)
+                    .post(anotherPost)
+                    .user(user)
+                    .build();
+            given(postReplyRepository.findById(reply.getId())).willReturn(Optional.of(reply));
+
+            // when & then
+            assertThatThrownBy(() -> postReplyService.updatePostReply(user, validRequest, post.getId(), reply.getId()))
+                    .isInstanceOf(CrumingException.class)
+                    .hasFieldOrPropertyWithValue("errorCode", ErrorCode.INVALID_REPLY_AND_POST);
+        }
+
+        @Test
+        @DisplayName("댓글 수정 - 권한 없음 실패")
+        void updatePostReply_Unauthorized() {
+            // given
+            given(postRepository.findById(post.getId())).willReturn(Optional.of(post));
+            User anotherUser = User.builder().id(2L).build();
+            PostReply reply = PostReply.builder()
+                    .id(1L)
+                    .post(post)
+                    .user(anotherUser)
+                    .build();
+            given(postReplyRepository.findById(reply.getId())).willReturn(Optional.of(reply));
+
+            // when & then
+            assertThatThrownBy(() -> postReplyService.updatePostReply(user, validRequest, post.getId(), reply.getId()))
+                    .isInstanceOf(CrumingException.class)
+                    .hasFieldOrPropertyWithValue("errorCode", ErrorCode.POST_REPLY_NOT_AUTHORIZED);
+        }
+
+        @Test
+        @DisplayName("댓글 수정 - 내용 길이 초과 실패")
+        void updatePostReply_ContentTooLong() {
+            // given
+            given(postRepository.findById(post.getId())).willReturn(Optional.of(post));
+            PostReply reply = PostReply.builder()
+                    .id(1L)
+                    .post(post)
+                    .user(user)
+                    .build();
+            given(postReplyRepository.findById(reply.getId())).willReturn(Optional.of(reply));
+
+            String longContent = "안녕Hello🎉!".repeat(100);
+            PostReplyRequest invalidRequest = new PostReplyRequest(longContent);
+
+            doThrow(new CrumingException(ErrorCode.INVALID_REPLY_SIZE))
+                    .when(postReplyValidator).validatePostReplyRequest(invalidRequest);
+
+            // when & then
+            assertThatThrownBy(() -> postReplyService.updatePostReply(user, invalidRequest, post.getId(), reply.getId()))
+                    .isInstanceOf(CrumingException.class)
+                    .hasFieldOrPropertyWithValue("errorCode", ErrorCode.INVALID_REPLY_SIZE);
+        }
     }
+
 }
