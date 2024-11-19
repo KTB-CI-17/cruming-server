@@ -23,17 +23,31 @@ public class PostController {
 
     private final PostService postService;
 
-    @PostMapping
+    @PostMapping("/general")
     @Operation(summary = "자유 게시글 작성", description = "자유 게시판에 게시글을 작성합니다.")
-    public ResponseEntity<Long> createPost(@AuthenticationPrincipal User user, @RequestBody PostGeneralRequest request) {
-        postService.createPost(user, request);
+    public ResponseEntity<Long> createGeneral(@AuthenticationPrincipal User user, @RequestBody PostGeneralRequest request) {
+        postService.createGeneral(user, request);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/problems")
     @Operation(summary = "만든 문제 게시글 작성", description = "만든 문제 게시글을 작성합니다.")
-    public ResponseEntity<Long> saveProblem(@AuthenticationPrincipal User user, @RequestBody PostProblemRequest request) {
-        postService.createProblems(user, request);
+    public ResponseEntity<Long> createProblem(@AuthenticationPrincipal User user, @RequestBody PostProblemRequest request) {
+        postService.createProblem(user, request);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/general/{postId}")
+    @Operation(summary = "자유 게시글 수정", description = "자유 게시판의 게시글을 수정합니다.")
+    public ResponseEntity<Long> updateGeneral(@AuthenticationPrincipal User user, @PathVariable Long postId, @RequestBody PostGeneralRequest request) {
+        postService.updateGeneral(user, postId, request);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/problems/{postId}")
+    @Operation(summary = "만든 문제 게시글 수정", description = "만든 문제 게시글을 수정합니다.")
+    public ResponseEntity<Long> updateProblem(@AuthenticationPrincipal User user, @PathVariable Long postId, @RequestBody PostProblemRequest request) {
+        postService.updateProblem(user, postId, request);
         return ResponseEntity.ok().build();
     }
 
