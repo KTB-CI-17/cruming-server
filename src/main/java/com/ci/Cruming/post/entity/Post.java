@@ -70,5 +70,15 @@ public class Post {
     @Builder.Default
     private List<PostReply> replies = new ArrayList<>();
 
+    public void update(String title, String content) {
+        this.title = title;
+        this.content = content;
+    }
+
+    public void update(String title, String content, String level, Location location) {
+        update(title, content);
+        this.level = level;
+        this.location = location;
+    }
 
 }
