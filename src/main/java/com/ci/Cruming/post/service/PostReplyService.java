@@ -30,10 +30,9 @@ public class PostReplyService {
     public void createPostReply(User user, PostReplyRequest request, Long postId, Long parentId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new CrumingException(ErrorCode.POST_NOT_FOUND));
+        PostReply parentReply = validateAndGetParentReply(parentId, postId);
 
         postReplyValidator.validatePostReplyRequest(request);
-
-        PostReply parentReply = validateAndGetParentReply(parentId, postId);
         PostReply reply = postReplyMapper.toPostReply(user, post, parentReply, request);
 
         postReplyRepository.save(reply);
