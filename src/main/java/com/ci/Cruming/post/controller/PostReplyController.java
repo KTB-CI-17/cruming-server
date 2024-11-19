@@ -41,6 +41,15 @@ public class PostReplyController {
         return ResponseEntity.ok().build();
     }
 
+    @DeleteMapping("/replies/{replyId}")
+    @Operation(summary = "댓글 삭제", description = "댓글을 삭제합니다.")
+    public ResponseEntity<Void> deleteReply(
+            @AuthenticationPrincipal User user,
+            @PathVariable Long replyId
+    ) {
+        postReplyService.deletePostReply(user, replyId);
+        return ResponseEntity.ok().build();
+    }
 
 
 }

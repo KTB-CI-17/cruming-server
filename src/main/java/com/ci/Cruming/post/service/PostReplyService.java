@@ -42,13 +42,19 @@ public class PostReplyService {
     public void updatePostReply(User user, PostReplyRequest request, Long replyId) {
         PostReply reply = postReplyRepository.findById(replyId)
                 .orElseThrow(() -> new CrumingException(ErrorCode.REPLY_NOT_FOUND));
+        postReplyValidator.validatePostReplyAuthor(reply, user);
         postReplyValidator.validatePostReplyRequest(request);
 
-        if (!reply.getUser().equals(user)) {
-            throw new CrumingException(ErrorCode.POST_REPLY_NOT_AUTHORIZED);
-        }
-
         reply.update(request.content());
+    }
+
+    @Transactional
+    public void deletePostReply(User user, Long replyId) {
+        PostReply reply = postReplyRepository.findById(replyId)
+                .orElseThrow(() -> new CrumingException(ErrorCode.REPLY_NOT_FOUND));
+        postReplyValidator.validatePostReplyAuthor(reply, user);
+
+        postReplyRepository.delete(reply);
     }
 
     private PostReply validateAndGetParentReply(Long parentId, Long postId) {
