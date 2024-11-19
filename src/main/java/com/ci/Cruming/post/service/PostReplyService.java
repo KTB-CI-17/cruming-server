@@ -2,6 +2,7 @@ package com.ci.Cruming.post.service;
 
 import com.ci.Cruming.common.exception.CrumingException;
 import com.ci.Cruming.common.exception.ErrorCode;
+import com.ci.Cruming.post.dto.PostReplyResponse;
 import com.ci.Cruming.post.dto.PostReplyRequest;
 import com.ci.Cruming.post.dto.mapper.PostReplyMapper;
 import com.ci.Cruming.post.entity.Post;
@@ -12,8 +13,11 @@ import com.ci.Cruming.post.service.validator.PostReplyValidator;
 import com.ci.Cruming.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Slf4j
 @Service
@@ -25,6 +29,7 @@ public class PostReplyService {
     private final PostReplyRepository postReplyRepository;
     private final PostReplyValidator postReplyValidator;
     private final PostReplyMapper postReplyMapper;
+    private static final int CHILD_REPLY_SIZE = 5;
 
     @Transactional
     public void createPostReply(User user, PostReplyRequest request, Long postId, Long parentId) {
@@ -55,6 +60,32 @@ public class PostReplyService {
         postReplyValidator.validatePostReplyAuthor(reply, user);
 
         postReplyRepository.delete(reply);
+    }
+
+    public Page<PostReplyResponse> findPostReplyList(Pageable pageable, Long postId) {
+        Page<PostReply> parentReplies = postReplyRepository.findByPostIdAndParentIsNull(postId, pageable);
+
+        List<PostReplyResponse> result = parentReplies.getContent().stream()
+                .map(parent -> {
+                    Page<PostReply> children = postReplyRepository.findByParentId(
+                            parent.getId(),
+                            PageRequest.of(0, CHILD_REPLY_SIZE, Sort.by(Sort.Direction.DESC, "createdAt"))
+                    );
+
+                    List<PostReplyResponse> childResponses = children.getContent().stream()
+                            .map(postReplyMapper::toChildPostReplyResponse)
+                            .toList();
+
+                    return postReplyMapper.toParentPostReplyResponse(parent, childResponses);
+                })
+                .toList();
+
+        return new PageImpl<>(result, pageable, parentReplies.getTotalElements());
+    }
+
+    public Page<PostReplyResponse> findPostChildReplyList(Long parentId, Pageable pageable) {
+        return postReplyRepository.findByParentId(parentId, pageable)
+                .map(postReplyMapper::toChildPostReplyResponse);
     }
 
     private PostReply validateAndGetParentReply(Long parentId, Long postId) {

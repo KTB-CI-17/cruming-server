@@ -1,11 +1,15 @@
 package com.ci.Cruming.post.controller;
 
+import com.ci.Cruming.post.dto.PostReplyResponse;
 import com.ci.Cruming.post.dto.PostReplyRequest;
 import com.ci.Cruming.post.service.PostReplyService;
 import com.ci.Cruming.user.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -49,6 +53,21 @@ public class PostReplyController {
     ) {
         postReplyService.deletePostReply(user, replyId);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{postId}/replies")
+    @Operation(summary = "댓글 조회", description = "댓글을 조회합니다.")
+    public ResponseEntity<Page<PostReplyResponse>> getPostReplies(
+            @PathVariable Long postId,
+            @PageableDefault(size = 10) Pageable pageable) {
+        return ResponseEntity.ok(postReplyService.findPostReplyList(pageable, postId));
+    }
+
+    @GetMapping("/replies/{parentId}/children")
+    public ResponseEntity<Page<PostReplyResponse>> getChildReplies(
+            @PathVariable Long parentId,
+            @PageableDefault(size = 5) Pageable pageable) {
+        return ResponseEntity.ok(postReplyService.findPostChildReplyList(parentId, pageable));
     }
 
 
