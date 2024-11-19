@@ -34,7 +34,7 @@ public class PostReplyController {
     @Operation(summary = "댓글 작성", description = "게시글에 댓글을 작성합니다.")
     public ResponseEntity<Void> updateReply(
             @AuthenticationPrincipal User user,
-            @PathVariable(required = false) Long replyId,
+            @PathVariable Long replyId,
             @RequestBody PostReplyRequest request
     ) {
         postReplyService.updatePostReply(user, request, replyId);
