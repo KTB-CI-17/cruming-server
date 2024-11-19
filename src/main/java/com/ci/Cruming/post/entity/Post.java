@@ -6,6 +6,8 @@ import com.ci.Cruming.common.constants.Category;
 import com.ci.Cruming.common.constants.Visibility;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -17,10 +19,12 @@ import java.util.List;
 @Table(name = "post")
 @Getter
 @Builder
+@SQLDelete(sql = "UPDATE post SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
+@Where(clause = "deleted_at IS NULL")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
-@ToString
+@ToString(exclude = {"user", "location", "likes", "replies"})
 public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -58,10 +62,12 @@ public class Post {
     @Column
     private LocalDateTime deletedAt;
 
-    @OneToMany(mappedBy = "post")
+    @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE)
+    @Builder.Default
     private List<PostLike> likes = new ArrayList<>();
 
-    @OneToMany(mappedBy = "post")
+    @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE)
+    @Builder.Default
     private List<PostReply> replies = new ArrayList<>();
 
 
