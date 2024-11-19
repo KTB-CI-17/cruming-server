@@ -38,6 +38,25 @@ public class PostReplyService {
         postReplyRepository.save(reply);
     }
 
+    @Transactional
+    public void updatePostReply(User user, PostReplyRequest request, Long postId, Long replyId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new CrumingException(ErrorCode.POST_NOT_FOUND));
+        PostReply reply = postReplyRepository.findById(replyId)
+                .orElseThrow(() -> new CrumingException(ErrorCode.REPLY_NOT_FOUND));
+        postReplyValidator.validatePostReplyRequest(request);
+
+        if (!reply.getPost().equals(post)) {
+            throw new CrumingException(ErrorCode.INVALID_REPLY_AND_POST);
+        }
+
+        if (!reply.getUser().equals(user)) {
+            throw new CrumingException(ErrorCode.POST_REPLY_NOT_AUTHORIZED);
+        }
+
+        reply.update(request.content());
+    }
+
     private PostReply validateAndGetParentReply(Long parentId, Long postId) {
         if (parentId == null) {
             return null;
@@ -47,9 +66,10 @@ public class PostReplyService {
                 .orElseThrow(() -> new CrumingException(ErrorCode.REPLY_NOT_FOUND));
 
         if (!parentReply.getPost().getId().equals(postId)) {
-            throw new CrumingException(ErrorCode.INVALID_PARENT_REPLY_AND_POST);
+            throw new CrumingException(ErrorCode.INVALID_REPLY_AND_POST);
         }
 
         return parentReply;
     }
+
 }

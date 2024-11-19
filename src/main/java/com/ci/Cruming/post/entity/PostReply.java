@@ -52,4 +52,8 @@ public class PostReply {
 
     @Column
     private LocalDateTime deletedAt;
+
+    public void update(String content) {
+        this.content = content;
+    }
 }
