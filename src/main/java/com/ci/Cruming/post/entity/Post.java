@@ -45,10 +45,10 @@ public class Post {
     @Column(nullable = false, length = 50)
     private Category category;
 
-    @Column(nullable = false, length = 200)
+    @Column(nullable = false, length = 100)
     private String title;
 
-    @Column(nullable = false, length = 3000)
+    @Column(nullable = false, length = 1000)
     private String content;
 
     @Enumerated(EnumType.STRING)
