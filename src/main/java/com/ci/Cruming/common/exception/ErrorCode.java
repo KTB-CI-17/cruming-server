@@ -23,7 +23,9 @@ public enum ErrorCode {
     INVALID_REPLY(HttpStatus.BAD_REQUEST, "댓글을 입력해주세요."),
     INVALID_REPLY_SIZE(HttpStatus.BAD_REQUEST, "댓글은 최대 500자 까지 입력 가능합니다."),
     INVALID_REPLY_AND_POST(HttpStatus.BAD_REQUEST, "작성할 수 없는 댓글입니다."),
-    ;
+    INVALID_POST_CONTENT_SIZE(HttpStatus.BAD_REQUEST, "본문은 최대 1,000자 까지 입력 가능합니다."),
+    INVALID_POST_TITLE_SIZE(HttpStatus.BAD_REQUEST, "제목은 최대 100자 까지 입력 가능합니다."),
+    INVALID_POST_LEVEL_SIZE(HttpStatus.BAD_REQUEST, "난이도는 최대 50자 까지 입력 가능합니다.");
 
     private HttpStatus status;
     private String message;

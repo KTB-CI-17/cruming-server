@@ -12,6 +12,9 @@ import java.nio.charset.StandardCharsets;
 
 @Component
 public class PostReplyValidator {
+
+    private static final int MAX_CONTENT_BYTES = 1000 * 3;
+
     public void validatePostReplyRequest(PostReplyRequest request) {
         if (request == null) {
             throw new CrumingException(ErrorCode.INVALID_REPLY);
@@ -21,7 +24,7 @@ public class PostReplyValidator {
             throw new CrumingException(ErrorCode.INVALID_REPLY);
         }
 
-        if (request.content().getBytes(StandardCharsets.UTF_8).length > 500 * 3) {
+        if (request.content().getBytes(StandardCharsets.UTF_8).length > MAX_CONTENT_BYTES) {
             throw new CrumingException(ErrorCode.INVALID_REPLY_SIZE);
         }
     }
