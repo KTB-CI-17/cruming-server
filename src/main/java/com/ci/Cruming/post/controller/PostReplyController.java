@@ -12,13 +12,13 @@ import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/posts/{postId}/replies")
+@RequestMapping("/api/v1/posts")
 @RequiredArgsConstructor
 public class PostReplyController {
 
     private final PostReplyService postReplyService;
 
-    @PostMapping("/{parentId}")
+    @PostMapping("/{postId}/replies/{parentId}")
     @Operation(summary = "댓글 작성", description = "게시글에 댓글을 작성합니다.")
     public ResponseEntity<Void> createReply(
             @AuthenticationPrincipal User user,
@@ -30,16 +30,17 @@ public class PostReplyController {
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/{replyId}")
+    @PutMapping("/replies/{replyId}")
     @Operation(summary = "댓글 작성", description = "게시글에 댓글을 작성합니다.")
     public ResponseEntity<Void> updateReply(
             @AuthenticationPrincipal User user,
-            @PathVariable Long postId,
             @PathVariable(required = false) Long replyId,
             @RequestBody PostReplyRequest request
     ) {
-        postReplyService.updatePostReply(user, request, postId, replyId);
+        postReplyService.updatePostReply(user, request, replyId);
         return ResponseEntity.ok().build();
     }
+
+
 
 }
