@@ -36,13 +36,10 @@ class PostReplyServiceTest {
 
     @Mock
     private PostRepository postRepository;
-
     @Mock
     private PostReplyRepository postReplyRepository;
-
     @Mock
     private PostReplyValidator postReplyValidator;
-
     @Mock
     private PostReplyMapper postReplyMapper;
 
@@ -77,45 +74,36 @@ class PostReplyServiceTest {
     @Nested
     @DisplayName("댓글 생성")
     class CreatePostReply {
-
         @Test
         @DisplayName("댓글 작성 - 성공")
         void createPostReply_Success() {
-            // given
             given(postRepository.findById(post.getId())).willReturn(Optional.of(post));
             given(postReplyMapper.toPostReply(any(), any(), any(), any()))
                     .willReturn(PostReply.builder().build());
 
-            // when
             postReplyService.createPostReply(user, validRequest, post.getId(), null);
 
-            // then
             verify(postReplyRepository).save(any(PostReply.class));
         }
 
         @Test
         @DisplayName("대댓글 작성 - 성공")
         void createChildPostReply_Success() {
-            // given
             given(postRepository.findById(post.getId())).willReturn(Optional.of(post));
             given(postReplyRepository.findById(parentReply.getId())).willReturn(Optional.of(parentReply));
             given(postReplyMapper.toPostReply(any(), any(), any(), any()))
                     .willReturn(PostReply.builder().build());
 
-            // when
             postReplyService.createPostReply(user, validRequest, post.getId(), parentReply.getId());
 
-            // then
             verify(postReplyRepository).save(any(PostReply.class));
         }
 
         @Test
         @DisplayName("댓글 작성 - 게시글 없음 실패")
         void createPostReply_PostNotFound() {
-            // given
             given(postRepository.findById(post.getId())).willReturn(Optional.empty());
 
-            // when & then
             assertThatThrownBy(() -> postReplyService.createPostReply(user, validRequest, post.getId(), null))
                     .isInstanceOf(CrumingException.class)
                     .hasFieldOrPropertyWithValue("errorCode", ErrorCode.POST_NOT_FOUND);
@@ -124,14 +112,12 @@ class PostReplyServiceTest {
         @Test
         @DisplayName("댓글 작성 - 게시글 삭제됨 실패")
         void createPostReply_PostDeleted() {
-            // given
             Post deletedPost = Post.builder()
                     .id(1L)
                     .deletedAt(LocalDateTime.now())
                     .build();
             given(postRepository.findById(deletedPost.getId())).willReturn(Optional.empty());
 
-            // when & then
             assertThatThrownBy(() -> postReplyService.createPostReply(user, validRequest, deletedPost.getId(), null))
                     .isInstanceOf(CrumingException.class)
                     .hasFieldOrPropertyWithValue("errorCode", ErrorCode.POST_NOT_FOUND);
@@ -140,11 +126,9 @@ class PostReplyServiceTest {
         @Test
         @DisplayName("대댓글 작성 - 부모 댓글 없음 실패")
         void createPostReply_ParentReplyNotFound() {
-            // given
             given(postRepository.findById(post.getId())).willReturn(Optional.of(post));
             given(postReplyRepository.findById(parentReply.getId())).willReturn(Optional.empty());
 
-            // when & then
             assertThatThrownBy(() -> postReplyService.createPostReply(user, validRequest, post.getId(), parentReply.getId()))
                     .isInstanceOf(CrumingException.class)
                     .hasFieldOrPropertyWithValue("errorCode", ErrorCode.REPLY_NOT_FOUND);
@@ -153,7 +137,6 @@ class PostReplyServiceTest {
         @Test
         @DisplayName("대댓글 작성 - 부모 댓글 삭제됨 실패")
         void createPostReply_ParentReplyDeleted() {
-            // given
             PostReply deletedParentReply = PostReply.builder()
                     .id(1L)
                     .post(post)
@@ -162,26 +145,22 @@ class PostReplyServiceTest {
             given(postRepository.findById(post.getId())).willReturn(Optional.of(post));
             given(postReplyRepository.findById(deletedParentReply.getId())).willReturn(Optional.empty());
 
-            // when & then
             assertThatThrownBy(() -> postReplyService.createPostReply(user, validRequest, post.getId(), deletedParentReply.getId()))
                     .isInstanceOf(CrumingException.class)
                     .hasFieldOrPropertyWithValue("errorCode", ErrorCode.REPLY_NOT_FOUND);
         }
 
-
         @Test
         @DisplayName("대댓글 작성 - 부모 댓글이 다른 게시글의 댓글인 경우 실패")
         void createPostReply_InvalidParentReplyPost() {
-            // given
             PostReply invalidParentReply = PostReply.builder()
                     .id(1L)
-                    .post(anotherPost)  // 다른 게시글에 달린 댓글
+                    .post(anotherPost)
                     .build();
 
             given(postRepository.findById(post.getId())).willReturn(Optional.of(post));
             given(postReplyRepository.findById(invalidParentReply.getId())).willReturn(Optional.of(invalidParentReply));
 
-            // when & then
             assertThatThrownBy(() -> postReplyService.createPostReply(user, validRequest, post.getId(), invalidParentReply.getId()))
                     .isInstanceOf(CrumingException.class)
                     .hasFieldOrPropertyWithValue("errorCode", ErrorCode.INVALID_REPLY_AND_POST);
@@ -194,17 +173,13 @@ class PostReplyServiceTest {
         @Test
         @DisplayName("댓글 작성 - 내용 길이 초과 실패")
         void createPostReply_ContentTooLong() {
-            // given
-            String base = "안녕Hello🎉!";
-            String mixedContent = base.repeat(100);
-
-            PostReplyRequest invalidRequest = new PostReplyRequest(mixedContent);
+            String longContent = "안녕Hello🎉!".repeat(100);
+            PostReplyRequest invalidRequest = new PostReplyRequest(longContent);
 
             given(postRepository.findById(post.getId())).willReturn(Optional.of(post));
             doThrow(new CrumingException(ErrorCode.INVALID_REPLY_SIZE))
                     .when(postReplyValidator).validatePostReplyRequest(invalidRequest);
 
-            // when & then
             assertThatThrownBy(() -> postReplyService.createPostReply(user, invalidRequest, post.getId(), null))
                     .isInstanceOf(CrumingException.class)
                     .hasFieldOrPropertyWithValue("errorCode", ErrorCode.INVALID_REPLY_SIZE);
@@ -213,105 +188,61 @@ class PostReplyServiceTest {
         @Test
         @DisplayName("댓글 작성 - 내용 길이 정상")
         void createPostReply_WithValidContent_Success() {
-            // given
-            String base = "안녕Hello🎉!";
-            String mixedContent = base.repeat(90);
-
-            PostReplyRequest validRequest = new PostReplyRequest(mixedContent);
+            String validContent = "안녕Hello🎉!".repeat(90);
+            PostReplyRequest validContentRequest = new PostReplyRequest(validContent);
 
             given(postRepository.findById(post.getId())).willReturn(Optional.of(post));
             given(postReplyMapper.toPostReply(any(), any(), any(), any()))
                     .willReturn(PostReply.builder().build());
             doNothing().when(postReplyValidator).validatePostReplyRequest(any());
 
-            // when
-            postReplyService.createPostReply(user, validRequest, post.getId(), null);
+            postReplyService.createPostReply(user, validContentRequest, post.getId(), null);
 
-            // then
             verify(postReplyRepository).save(any(PostReply.class));
-            verify(postReplyValidator).validatePostReplyRequest(validRequest);
+            verify(postReplyValidator).validatePostReplyRequest(validContentRequest);
         }
+    }
 
-
+    @Nested
+    @DisplayName("댓글 수정")
+    class UpdatePostReply {
         @Test
         @DisplayName("댓글 수정 - 성공")
         void updatePostReply_Success() {
-            // given
-            given(postRepository.findById(post.getId())).willReturn(Optional.of(post));
             PostReply reply = PostReply.builder()
                     .id(1L)
-                    .post(post)
                     .user(user)
                     .content("Original content")
                     .build();
             given(postReplyRepository.findById(reply.getId())).willReturn(Optional.of(reply));
 
-            // when
-            postReplyService.updatePostReply(user, validRequest, post.getId(), reply.getId());
+            postReplyService.updatePostReply(user, validRequest, reply.getId());
 
-            // then
             verify(postReplyValidator).validatePostReplyRequest(validRequest);
             assertThat(reply.getContent()).isEqualTo(validRequest.content());
         }
 
         @Test
-        @DisplayName("댓글 수정 - 게시글 없음 실패")
-        void updatePostReply_PostNotFound() {
-            // given
-            given(postRepository.findById(post.getId())).willReturn(Optional.empty());
-
-            // when & then
-            assertThatThrownBy(() -> postReplyService.updatePostReply(user, validRequest, post.getId(), 1L))
-                    .isInstanceOf(CrumingException.class)
-                    .hasFieldOrPropertyWithValue("errorCode", ErrorCode.POST_NOT_FOUND);
-        }
-
-        @Test
         @DisplayName("댓글 수정 - 댓글 없음 실패")
         void updatePostReply_ReplyNotFound() {
-            // given
-            given(postRepository.findById(post.getId())).willReturn(Optional.of(post));
             given(postReplyRepository.findById(1L)).willReturn(Optional.empty());
 
-            // when & then
-            assertThatThrownBy(() -> postReplyService.updatePostReply(user, validRequest, post.getId(), 1L))
+            assertThatThrownBy(() -> postReplyService.updatePostReply(user, validRequest, 1L))
                     .isInstanceOf(CrumingException.class)
                     .hasFieldOrPropertyWithValue("errorCode", ErrorCode.REPLY_NOT_FOUND);
         }
 
         @Test
-        @DisplayName("댓글 수정 - 다른 게시글의 댓글인 경우 실패")
-        void updatePostReply_InvalidReplyPost() {
-            // given
-            given(postRepository.findById(post.getId())).willReturn(Optional.of(post));
-            PostReply reply = PostReply.builder()
-                    .id(1L)
-                    .post(anotherPost)
-                    .user(user)
-                    .build();
-            given(postReplyRepository.findById(reply.getId())).willReturn(Optional.of(reply));
-
-            // when & then
-            assertThatThrownBy(() -> postReplyService.updatePostReply(user, validRequest, post.getId(), reply.getId()))
-                    .isInstanceOf(CrumingException.class)
-                    .hasFieldOrPropertyWithValue("errorCode", ErrorCode.INVALID_REPLY_AND_POST);
-        }
-
-        @Test
         @DisplayName("댓글 수정 - 권한 없음 실패")
         void updatePostReply_Unauthorized() {
-            // given
-            given(postRepository.findById(post.getId())).willReturn(Optional.of(post));
             User anotherUser = User.builder().id(2L).build();
             PostReply reply = PostReply.builder()
                     .id(1L)
-                    .post(post)
                     .user(anotherUser)
                     .build();
             given(postReplyRepository.findById(reply.getId())).willReturn(Optional.of(reply));
 
-            // when & then
-            assertThatThrownBy(() -> postReplyService.updatePostReply(user, validRequest, post.getId(), reply.getId()))
+            assertThatThrownBy(() -> postReplyService.updatePostReply(user, validRequest, reply.getId()))
                     .isInstanceOf(CrumingException.class)
                     .hasFieldOrPropertyWithValue("errorCode", ErrorCode.POST_REPLY_NOT_AUTHORIZED);
         }
@@ -319,11 +250,8 @@ class PostReplyServiceTest {
         @Test
         @DisplayName("댓글 수정 - 내용 길이 초과 실패")
         void updatePostReply_ContentTooLong() {
-            // given
-            given(postRepository.findById(post.getId())).willReturn(Optional.of(post));
             PostReply reply = PostReply.builder()
                     .id(1L)
-                    .post(post)
                     .user(user)
                     .build();
             given(postReplyRepository.findById(reply.getId())).willReturn(Optional.of(reply));
@@ -334,11 +262,9 @@ class PostReplyServiceTest {
             doThrow(new CrumingException(ErrorCode.INVALID_REPLY_SIZE))
                     .when(postReplyValidator).validatePostReplyRequest(invalidRequest);
 
-            // when & then
-            assertThatThrownBy(() -> postReplyService.updatePostReply(user, invalidRequest, post.getId(), reply.getId()))
+            assertThatThrownBy(() -> postReplyService.updatePostReply(user, invalidRequest, reply.getId()))
                     .isInstanceOf(CrumingException.class)
                     .hasFieldOrPropertyWithValue("errorCode", ErrorCode.INVALID_REPLY_SIZE);
         }
     }
-
 }
