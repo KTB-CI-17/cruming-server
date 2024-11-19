@@ -69,6 +69,14 @@ public class PostService {
         post.update(request.title(), request.content(), request.level(), location);
     }
 
+    @Transactional
+    public void deletePost(User user, Long postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new CrumingException(ErrorCode.POST_NOT_FOUND));
+        postValidator.validatePostAuthor(post, user);
+        postRepository.delete(post);
+    }
+
     public Page<PostListResponse> findPostList(Pageable pageable, Category category) {
         return postRepository.findByPostInCategory(pageable, category)
                 .map(postMapper::toPostListResponse);

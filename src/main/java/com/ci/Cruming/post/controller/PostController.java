@@ -51,6 +51,13 @@ public class PostController {
         return ResponseEntity.ok().build();
     }
 
+    @DeleteMapping("/{postId}")
+    @Operation(summary = "게시글 삭제", description = "게시글을 삭제합니다.")
+    public ResponseEntity<Void> deletePost(@AuthenticationPrincipal User user, @PathVariable Long postId) {
+        postService.deletePost(user, postId);
+        return ResponseEntity.ok().build();
+    }
+
     // TODO: 최신순, 인기순 필터 기능 추가
     @GetMapping
     @Operation(summary = "커뮤니티 게시글 리스트 조회", description = "게시판의 종류를 입력받고 페이징 처리된 게시글 리스트를 전달합니다.")
