@@ -235,13 +235,17 @@ class PostReplyServiceTest {
         @Test
         @DisplayName("댓글 수정 - 권한 없음 실패")
         void updatePostReply_Unauthorized() {
+            // given
             User anotherUser = User.builder().id(2L).build();
             PostReply reply = PostReply.builder()
                     .id(1L)
                     .user(anotherUser)
                     .build();
             given(postReplyRepository.findById(reply.getId())).willReturn(Optional.of(reply));
+            doThrow(new CrumingException(ErrorCode.POST_REPLY_NOT_AUTHORIZED))
+                    .when(postReplyValidator).validatePostReplyAuthor(reply, user);
 
+            // when & then
             assertThatThrownBy(() -> postReplyService.updatePostReply(user, validRequest, reply.getId()))
                     .isInstanceOf(CrumingException.class)
                     .hasFieldOrPropertyWithValue("errorCode", ErrorCode.POST_REPLY_NOT_AUTHORIZED);
@@ -265,6 +269,59 @@ class PostReplyServiceTest {
             assertThatThrownBy(() -> postReplyService.updatePostReply(user, invalidRequest, reply.getId()))
                     .isInstanceOf(CrumingException.class)
                     .hasFieldOrPropertyWithValue("errorCode", ErrorCode.INVALID_REPLY_SIZE);
+        }
+    }
+
+    @Nested
+    @DisplayName("댓글 삭제")
+    class DeletePostReply {
+        @Test
+        @DisplayName("댓글 삭제 - 성공")
+        void deletePostReply_Success() {
+            // given
+            PostReply reply = PostReply.builder()
+                    .id(1L)
+                    .user(user)
+                    .build();
+            given(postReplyRepository.findById(reply.getId())).willReturn(Optional.of(reply));
+            doNothing().when(postReplyRepository).delete(reply);
+
+            // when
+            postReplyService.deletePostReply(user, reply.getId());
+
+            // then
+            verify(postReplyRepository).delete(reply);
+        }
+
+        @Test
+        @DisplayName("댓글 삭제 - 댓글 없음 실패")
+        void deletePostReply_ReplyNotFound() {
+            // given
+            given(postReplyRepository.findById(1L)).willReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> postReplyService.deletePostReply(user, 1L))
+                    .isInstanceOf(CrumingException.class)
+                    .hasFieldOrPropertyWithValue("errorCode", ErrorCode.REPLY_NOT_FOUND);
+        }
+
+        @Test
+        @DisplayName("댓글 삭제 - 권한 없음 실패")
+        void deletePostReply_Unauthorized() {
+            // given
+            User anotherUser = User.builder().id(2L).build();
+            PostReply reply = PostReply.builder()
+                    .id(1L)
+                    .user(anotherUser)
+                    .build();
+            given(postReplyRepository.findById(reply.getId())).willReturn(Optional.of(reply));
+            doThrow(new CrumingException(ErrorCode.POST_REPLY_NOT_AUTHORIZED))
+                    .when(postReplyValidator).validatePostReplyAuthor(reply, user);
+
+            // when & then
+            assertThatThrownBy(() -> postReplyService.deletePostReply(user, reply.getId()))
+                    .isInstanceOf(CrumingException.class)
+                    .hasFieldOrPropertyWithValue("errorCode", ErrorCode.POST_REPLY_NOT_AUTHORIZED);
         }
     }
 }
