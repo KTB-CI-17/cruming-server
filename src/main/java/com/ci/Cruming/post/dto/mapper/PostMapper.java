@@ -6,6 +6,7 @@ import com.ci.Cruming.location.entity.Location;
 import com.ci.Cruming.post.dto.PostListResponse;
 import com.ci.Cruming.post.dto.PostProblemRequest;
 import com.ci.Cruming.post.dto.PostGeneralRequest;
+import com.ci.Cruming.post.dto.PostResponse;
 import com.ci.Cruming.post.entity.Post;
 import com.ci.Cruming.user.entity.User;
 import org.springframework.stereotype.Component;
@@ -39,6 +40,24 @@ public class PostMapper {
                 post.getId(),
                 post.getTitle(),
                 post.getCreatedAt()
+        );
+    }
+
+    public PostResponse toPostResponse(User user, Post post) {
+        boolean isWriter = user.equals(post.getUser());
+
+        return new PostResponse(
+                post.getId(),
+                post.getTitle(),
+                post.getContent(),
+                post.getLocation().getPlaceName(),
+                post.getLevel(),
+                post.getCategory(),
+                post.getVisibility(),
+                post.getCreatedAt(),
+                post.getUser().getId(),
+                post.getUser().getNickname(),
+                isWriter
         );
     }
 

@@ -8,6 +8,7 @@ import com.ci.Cruming.location.service.LocationService;
 import com.ci.Cruming.post.dto.PostListResponse;
 import com.ci.Cruming.post.dto.PostProblemRequest;
 import com.ci.Cruming.post.dto.PostGeneralRequest;
+import com.ci.Cruming.post.dto.PostResponse;
 import com.ci.Cruming.post.dto.mapper.PostMapper;
 import com.ci.Cruming.post.entity.Post;
 import com.ci.Cruming.post.service.validator.PostValidator;
@@ -50,8 +51,7 @@ public class PostService {
 
     @Transactional
     public void updateGeneral(User user, Long postId, PostGeneralRequest request) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new CrumingException(ErrorCode.POST_NOT_FOUND));
+        Post post = getPost(postId);
         postValidator.validatePostAuthor(post, user);
         postValidator.validatePostGeneralRequest(request);
 
@@ -60,8 +60,7 @@ public class PostService {
 
     @Transactional
     public void updateProblem(User user, Long postId, PostProblemRequest request) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new CrumingException(ErrorCode.POST_NOT_FOUND));
+        Post post = getPost(postId);
         postValidator.validatePostAuthor(post, user);
         postValidator.validatePostProblemRequest(request);
 
@@ -71,14 +70,24 @@ public class PostService {
 
     @Transactional
     public void deletePost(User user, Long postId) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new CrumingException(ErrorCode.POST_NOT_FOUND));
+        Post post = getPost(postId);
         postValidator.validatePostAuthor(post, user);
         postRepository.delete(post);
     }
 
+
     public Page<PostListResponse> findPostList(Pageable pageable, Category category) {
         return postRepository.findByPostInCategory(pageable, category)
                 .map(postMapper::toPostListResponse);
+    }
+    
+    public PostResponse findPost(User user, Long postId) {
+        Post post = getPost(postId);
+        return postMapper.toPostResponse(user, post);
+    }
+
+    private Post getPost(Long postId) {
+        return postRepository.findById(postId)
+                .orElseThrow(() -> new CrumingException(ErrorCode.POST_NOT_FOUND));
     }
 }
