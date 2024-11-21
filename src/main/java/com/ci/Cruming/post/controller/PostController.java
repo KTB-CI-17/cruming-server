@@ -4,6 +4,7 @@ import com.ci.Cruming.common.constants.Category;
 import com.ci.Cruming.post.dto.PostListResponse;
 import com.ci.Cruming.post.dto.PostProblemRequest;
 import com.ci.Cruming.post.dto.PostGeneralRequest;
+import com.ci.Cruming.post.dto.PostResponse;
 import com.ci.Cruming.post.service.PostService;
 import com.ci.Cruming.user.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
@@ -64,4 +65,12 @@ public class PostController {
     public ResponseEntity<Page<PostListResponse>> findPostList(Pageable pageable, @RequestParam Category category) {
         return ResponseEntity.ok(postService.findPostList(pageable, category));
     }
+
+    @GetMapping("/{postId}")
+    @Operation(summary = "게시글 상세 조회", description = "게시글 상세 정보를 조회합니다.")
+    public ResponseEntity<PostResponse> findPost(@AuthenticationPrincipal User user, @PathVariable Long postId) {
+        PostResponse postResponse = postService.findPost(user, postId);
+        return ResponseEntity.ok().body(postResponse);
+    }
+
 }
