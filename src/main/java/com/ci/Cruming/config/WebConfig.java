@@ -1,4 +1,4 @@
-package com.ci.Cruming.global.config;
+package com.ci.Cruming.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
