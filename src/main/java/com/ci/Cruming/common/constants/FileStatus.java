@@ -4,5 +4,5 @@ import lombok.Getter;
 
 @Getter
 public enum FileStatus {
-    ACTIVE, INACTIVE
+    ACTIVE, DELETED
 }
