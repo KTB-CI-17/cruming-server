@@ -45,8 +45,11 @@ public class User {
     private String intro;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "home_gym", nullable = false)
+    @JoinColumn(name = "home_gym")
     private Location homeGym;
+
+    @Column(name = "instagram_id")
+    private String instagramId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
