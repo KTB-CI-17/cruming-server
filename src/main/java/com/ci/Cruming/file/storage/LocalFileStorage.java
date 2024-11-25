@@ -4,10 +4,13 @@ import com.ci.Cruming.common.exception.CrumingException;
 import com.ci.Cruming.common.exception.ErrorCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -51,5 +54,21 @@ public class LocalFileStorage implements FileStorage {
                 .normalize()
                 .resolve(fileKey)
                 .toString();
+    }
+
+    @Override
+    public Resource loadAsResource(String fileKey) {
+        try {
+            Path file = Paths.get(uploadDir).resolve(fileKey);
+            Resource resource = new UrlResource(file.toUri());
+
+            if (resource.exists() || resource.isReadable()) {
+                return resource;
+            } else {
+                throw new CrumingException(ErrorCode.FILE_NOT_FOUND);
+            }
+        } catch (MalformedURLException e) {
+            throw new CrumingException(ErrorCode.FILE_NOT_FOUND);
+        }
     }
 }
