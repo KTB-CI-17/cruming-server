@@ -71,4 +71,8 @@ public class FileService {
     public List<File> getFilesByPost(Post post) {
         return fileRepository.findByPostId(post.getId(), FileTargetType.POST);
     }
+
+    public void deleteByPost(Post post) {
+        fileRepository.deleteByPostId(post.getId(), FileTargetType.POST);
+    }
 }

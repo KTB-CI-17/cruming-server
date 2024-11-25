@@ -29,6 +29,6 @@ public class FileMapping {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "mapping")
+    @OneToMany(mappedBy = "mapping", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<File> files = new ArrayList<>();
 }

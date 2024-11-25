@@ -4,6 +4,7 @@ import com.ci.Cruming.common.constants.FileStatus;
 import com.ci.Cruming.common.constants.FileTargetType;
 import com.ci.Cruming.common.constants.FileType;
 import com.ci.Cruming.common.utils.FileUtils;
+import com.ci.Cruming.file.dto.FileResponse;
 import com.ci.Cruming.file.entity.File;
 import com.ci.Cruming.file.entity.FileMapping;
 import com.ci.Cruming.post.entity.Post;
@@ -37,5 +38,20 @@ public class FileMapper {
                 .displayOrder(displayOrder)
                 .createdAt(LocalDateTime.now())
                 .build();
+    }
+
+    public FileResponse toFileResponse(File file) {
+        return new FileResponse(
+                file.getId(),
+                file.getFileName(),
+                file.getFileKey(),
+                "/api/v1/files/" + file.getFileKey(),
+                file.getFileType(),
+                file.getFileSize(),
+                file.getDisplayOrder(),
+                file.getUser().getId(),
+                file.getStatus(),
+                file.getCreatedAt()
+        );
     }
 }

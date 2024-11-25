@@ -1,5 +1,6 @@
 package com.ci.Cruming.post.entity;
 
+import com.ci.Cruming.file.entity.FileMapping;
 import com.ci.Cruming.location.entity.Location;
 import com.ci.Cruming.user.entity.User;
 import com.ci.Cruming.common.constants.Category;
@@ -69,6 +70,10 @@ public class Post {
     @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE)
     @Builder.Default
     private List<PostReply> replies = new ArrayList<>();
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "file_mapping_id")
+    private FileMapping fileMapping;
 
     public void update(String title, String content) {
         this.title = title;

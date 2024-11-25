@@ -2,8 +2,10 @@ package com.ci.Cruming.post.dto;
 
 import com.ci.Cruming.common.constants.Category;
 import com.ci.Cruming.common.constants.Visibility;
+import com.ci.Cruming.file.dto.FileResponse;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record PostResponse(
         Long id,
@@ -16,7 +18,9 @@ public record PostResponse(
         LocalDateTime createdAt,
         Long userId,
         String userNickname,
-        boolean isWriter
+        String instagram_id,
+        boolean isWriter,
+        List<FileResponse> files
 ) {
 
 }
