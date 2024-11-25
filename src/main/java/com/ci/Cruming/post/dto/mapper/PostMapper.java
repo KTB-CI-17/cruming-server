@@ -20,6 +20,7 @@ public class PostMapper {
                 .title(request.title())
                 .content(request.content())
                 .category(Category.GENERAL)
+                .visibility(Visibility.PUBLIC)
                 .build();
     }
 
