@@ -22,7 +22,8 @@ public record PostResponse(
         boolean isWriter,
         List<FileResponse> files,
         boolean isLiked,
-        Long likeCount
+        Long likeCount,
+        Long replyCount
 ) {
 
 }

@@ -16,6 +16,7 @@ import com.ci.Cruming.post.dto.PostResponse;
 import com.ci.Cruming.post.dto.mapper.PostMapper;
 import com.ci.Cruming.post.entity.Post;
 import com.ci.Cruming.post.repository.PostLikeRepository;
+import com.ci.Cruming.post.repository.PostReplyRepository;
 import com.ci.Cruming.post.service.validator.PostValidator;
 import com.ci.Cruming.user.entity.User;
 import com.ci.Cruming.post.repository.PostRepository;
@@ -38,6 +39,7 @@ import java.util.stream.Collectors;
 public class PostService {
 
     private final PostRepository postRepository;
+    private final PostReplyRepository postReplyRepository;
     private final LocationService locationService;
     private final PostLikeRepository postLikeRepository;
     private final FileService fileService;
@@ -119,8 +121,9 @@ public class PostService {
 
         boolean isLiked = postLikeRepository.existsByPostAndUser(post, user);
         Long likeCount = postLikeRepository.countByPost(post);
+        Long replyCount = postReplyRepository.countByPost(post);
 
-        return postMapper.toPostResponse(user, post, files, isLiked, likeCount);
+        return postMapper.toPostResponse(user, post, files, isLiked, likeCount, replyCount);
     }
 
     private Post getPost(Long postId) {
