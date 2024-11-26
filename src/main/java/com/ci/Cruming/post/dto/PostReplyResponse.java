@@ -9,6 +9,7 @@ public record PostReplyResponse(
         LocalDateTime createdAt,
         String userProfile,
         String userNickname,
+        boolean isWriter,
         List<PostReplyResponse> children
 ) {
 }

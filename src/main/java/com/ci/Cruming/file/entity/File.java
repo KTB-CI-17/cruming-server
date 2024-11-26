@@ -15,7 +15,6 @@ import java.time.LocalDateTime;
 @Table(name = "file")
 @Getter
 @Builder
-@Where(clause = "status IS NOT DELETED")
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class File {
@@ -23,7 +22,7 @@ public class File {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "mapping_id", nullable = false)
     private FileMapping mapping;
 

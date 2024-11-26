@@ -62,7 +62,7 @@ public class PostReplyService {
         postReplyRepository.delete(reply);
     }
 
-    public Page<PostReplyResponse> findPostReplyList(Pageable pageable, Long postId) {
+    public Page<PostReplyResponse> findPostReplyList(User user, Pageable pageable, Long postId) {
         Page<PostReply> parentReplies = postReplyRepository.findByPostIdAndParentIsNull(postId, pageable);
 
         List<PostReplyResponse> result = parentReplies.getContent().stream()
@@ -73,23 +73,23 @@ public class PostReplyService {
                     );
 
                     List<PostReplyResponse> childResponses = children.getContent().stream()
-                            .map(postReplyMapper::toChildPostReplyResponse)
+                            .map(postReply -> postReplyMapper.toChildPostReplyResponse(user, postReply))
                             .toList();
 
-                    return postReplyMapper.toParentPostReplyResponse(parent, childResponses);
+                    return postReplyMapper.toParentPostReplyResponse(user, parent, childResponses);
                 })
                 .toList();
 
         return new PageImpl<>(result, pageable, parentReplies.getTotalElements());
     }
 
-    public Page<PostReplyResponse> findPostChildReplyList(Long parentId, Pageable pageable) {
+    public Page<PostReplyResponse> findPostChildReplyList(User user, Long parentId, Pageable pageable) {
         return postReplyRepository.findByParentId(parentId, pageable)
-                .map(postReplyMapper::toChildPostReplyResponse);
+                .map(postReply -> postReplyMapper.toChildPostReplyResponse(user, postReply));
     }
 
     private PostReply validateAndGetParentReply(Long parentId, Long postId) {
-        if (parentId == null) {
+        if (parentId == null || parentId == 0) {
             return null;
         }
 
