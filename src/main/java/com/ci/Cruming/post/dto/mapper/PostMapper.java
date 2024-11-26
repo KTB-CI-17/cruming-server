@@ -47,7 +47,7 @@ public class PostMapper {
         );
     }
 
-    public PostResponse toPostResponse(User user, Post post, List<FileResponse> files, boolean isLiked, Long likeCount) {
+    public PostResponse toPostResponse(User user, Post post, List<FileResponse> files, boolean isLiked, Long likeCount, Long replyCount) {
         boolean isWriter = user.getId().equals(post.getUser().getId());
         String location = null;
         if (post.getLocation() != null) {
@@ -69,7 +69,8 @@ public class PostMapper {
                 isWriter,
                 files,
                 isLiked,
-                likeCount
+                likeCount,
+                replyCount
         );
     }
 
