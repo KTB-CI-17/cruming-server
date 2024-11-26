@@ -11,7 +11,7 @@ public record PostResponse(
         Long id,
         String title,
         String content,
-        String Location,
+        String location,
         String level,
         Category category,
         Visibility visibility,

@@ -22,12 +22,23 @@ public class PostReplyController {
 
     private final PostReplyService postReplyService;
 
-    @PostMapping("/{postId}/replies/{parentId}")
+    @PostMapping("/{postId}/replies")
     @Operation(summary = "댓글 작성", description = "게시글에 댓글을 작성합니다.")
+    public ResponseEntity<Void> createTopLevelReply(
+            @AuthenticationPrincipal User user,
+            @PathVariable Long postId,
+            @RequestBody PostReplyRequest request
+    ) {
+        postReplyService.createPostReply(user, request, postId, null);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{postId}/replies/{parentId}")
+    @Operation(summary = "대댓글 작성", description = "게시글에 대댓글을 작성합니다.")
     public ResponseEntity<Void> createReply(
             @AuthenticationPrincipal User user,
             @PathVariable Long postId,
-            @PathVariable(required = false) Long parentId,
+            @PathVariable Long parentId,
             @RequestBody PostReplyRequest request
     ) {
         postReplyService.createPostReply(user, request, postId, parentId);
@@ -35,7 +46,7 @@ public class PostReplyController {
     }
 
     @PutMapping("/replies/{replyId}")
-    @Operation(summary = "댓글 작성", description = "게시글에 댓글을 작성합니다.")
+    @Operation(summary = "댓글 수정", description = "게시글에 댓글을 수정합니다.")
     public ResponseEntity<Void> updateReply(
             @AuthenticationPrincipal User user,
             @PathVariable Long replyId,
@@ -58,16 +69,18 @@ public class PostReplyController {
     @GetMapping("/{postId}/replies")
     @Operation(summary = "댓글 조회", description = "댓글을 조회합니다.")
     public ResponseEntity<Page<PostReplyResponse>> getPostReplies(
+            @AuthenticationPrincipal User user,
             @PathVariable Long postId,
             @PageableDefault(size = 10) Pageable pageable) {
-        return ResponseEntity.ok(postReplyService.findPostReplyList(pageable, postId));
+        return ResponseEntity.ok(postReplyService.findPostReplyList(user, pageable, postId));
     }
 
     @GetMapping("/replies/{parentId}/children")
     public ResponseEntity<Page<PostReplyResponse>> getChildReplies(
+            @AuthenticationPrincipal User user,
             @PathVariable Long parentId,
             @PageableDefault(size = 5) Pageable pageable) {
-        return ResponseEntity.ok(postReplyService.findPostChildReplyList(parentId, pageable));
+        return ResponseEntity.ok(postReplyService.findPostChildReplyList(user, parentId, pageable));
     }
 
 
