@@ -76,7 +76,12 @@ public class PostReplyService {
                             .map(postReply -> postReplyMapper.toChildPostReplyResponse(user, postReply))
                             .toList();
 
-                    return postReplyMapper.toParentPostReplyResponse(user, parent, childResponses);
+                    return postReplyMapper.toParentPostReplyResponse(
+                            user,
+                            parent,
+                            childResponses,
+                            children.getTotalElements()
+                    );
                 })
                 .toList();
 
