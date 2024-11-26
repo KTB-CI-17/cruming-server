@@ -20,7 +20,9 @@ public record PostResponse(
         String userNickname,
         String instagram_id,
         boolean isWriter,
-        List<FileResponse> files
+        List<FileResponse> files,
+        boolean isLiked,
+        Long likeCount
 ) {
 
 }

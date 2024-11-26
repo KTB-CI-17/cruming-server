@@ -47,7 +47,7 @@ public class PostMapper {
         );
     }
 
-    public PostResponse toPostResponse(User user, Post post, List<FileResponse> files) {
+    public PostResponse toPostResponse(User user, Post post, List<FileResponse> files, boolean isLiked, Long likeCount) {
         boolean isWriter = user.getId().equals(post.getUser().getId());
         String location = null;
         if (post.getLocation() != null) {
@@ -67,7 +67,9 @@ public class PostMapper {
                 post.getUser().getNickname(),
                 post.getUser().getInstagramId(),
                 isWriter,
-                files
+                files,
+                isLiked,
+                likeCount
         );
     }
 
