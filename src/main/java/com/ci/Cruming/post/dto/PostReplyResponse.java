@@ -10,6 +10,7 @@ public record PostReplyResponse(
         String userProfile,
         String userNickname,
         boolean isWriter,
-        List<PostReplyResponse> children
+        List<PostReplyResponse> children,
+        Long childCount
 ) {
 }
