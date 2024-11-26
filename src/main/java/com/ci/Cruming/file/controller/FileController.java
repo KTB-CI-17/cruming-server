@@ -1,6 +1,5 @@
 package com.ci.Cruming.file.controller;
 
-import com.ci.Cruming.common.constants.FileType;
 import com.ci.Cruming.file.storage.FileStorage;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -32,9 +31,5 @@ public class FileController {
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
         }
-    }
-
-    private String getFileExtension(String filename) {
-        return filename.substring(filename.lastIndexOf(".") + 1);
     }
 }
