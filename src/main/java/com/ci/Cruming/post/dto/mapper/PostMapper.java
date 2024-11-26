@@ -2,6 +2,7 @@ package com.ci.Cruming.post.dto.mapper;
 
 import com.ci.Cruming.common.constants.Category;
 import com.ci.Cruming.common.constants.Visibility;
+import com.ci.Cruming.file.dto.FileResponse;
 import com.ci.Cruming.location.entity.Location;
 import com.ci.Cruming.post.dto.PostListResponse;
 import com.ci.Cruming.post.dto.PostProblemRequest;
@@ -10,6 +11,8 @@ import com.ci.Cruming.post.dto.PostResponse;
 import com.ci.Cruming.post.entity.Post;
 import com.ci.Cruming.user.entity.User;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class PostMapper {
@@ -20,6 +23,7 @@ public class PostMapper {
                 .title(request.title())
                 .content(request.content())
                 .category(Category.GENERAL)
+                .visibility(Visibility.PUBLIC)
                 .build();
     }
 
@@ -43,21 +47,27 @@ public class PostMapper {
         );
     }
 
-    public PostResponse toPostResponse(User user, Post post) {
-        boolean isWriter = user.equals(post.getUser());
+    public PostResponse toPostResponse(User user, Post post, List<FileResponse> files) {
+        boolean isWriter = user.getId().equals(post.getUser().getId());
+        String location = null;
+        if (post.getLocation() != null) {
+            location = post.getLocation().getPlaceName();
+        }
 
         return new PostResponse(
                 post.getId(),
                 post.getTitle(),
                 post.getContent(),
-                post.getLocation().getPlaceName(),
+                location,
                 post.getLevel(),
                 post.getCategory(),
                 post.getVisibility(),
                 post.getCreatedAt(),
                 post.getUser().getId(),
                 post.getUser().getNickname(),
-                isWriter
+                post.getUser().getInstagramId(),
+                isWriter,
+                files
         );
     }
 

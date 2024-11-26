@@ -42,7 +42,6 @@ public class FileService {
         if (files == null || files.isEmpty()) {
             return List.of();
         }
-
         FileMapping fileMapping = fileMapper.toFileMapping(post);
         FileMapping savedMapping = fileMappingRepository.save(fileMapping);
 
@@ -55,6 +54,7 @@ public class FileService {
 
         for (int i = 0; i < files.size(); i++) {
             MultipartFile file = files.get(i);
+
             String fileKey = FileUtils.generateFileKey(FileUtils.getFileExtension(file.getOriginalFilename()));
 
             String storedUrl = fileStorage.store(file, fileKey);
@@ -70,5 +70,9 @@ public class FileService {
 
     public List<File> getFilesByPost(Post post) {
         return fileRepository.findByPostId(post.getId(), FileTargetType.POST);
+    }
+
+    public void deleteByPost(Post post) {
+        fileRepository.deleteByPostId(post.getId(), FileTargetType.POST);
     }
 }
