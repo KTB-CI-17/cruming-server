@@ -49,16 +49,16 @@ public class PostMapper {
 
     public PostResponse toPostResponse(User user, Post post, List<FileResponse> files) {
         boolean isWriter = user.getId().equals(post.getUser().getId());
-        String placeName = null;
+        String location = null;
         if (post.getLocation() != null) {
-            placeName = post.getLocation().getPlaceName();
+            location = post.getLocation().getPlaceName();
         }
 
         return new PostResponse(
                 post.getId(),
                 post.getTitle(),
                 post.getContent(),
-                placeName,
+                location,
                 post.getLevel(),
                 post.getCategory(),
                 post.getVisibility(),
