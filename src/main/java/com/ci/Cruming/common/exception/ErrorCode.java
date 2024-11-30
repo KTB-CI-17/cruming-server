@@ -7,12 +7,14 @@ import org.springframework.http.HttpStatus;
 @Getter
 @AllArgsConstructor
 public enum ErrorCode {
+    FAIL_GET_KAKAO_ACCESS_TOKEN(HttpStatus.INTERNAL_SERVER_ERROR, "카카오 토큰을 가져오는 것에 실패하였습니다."),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "에러가 발생하였습니다. 계속 될 경우 관리자에게 문의해주세요."),
 
     POST_NOT_AUTHORIZED(HttpStatus.FORBIDDEN, "권한이 없는 게시글입니다."),
     POST_REPLY_NOT_AUTHORIZED(HttpStatus.FORBIDDEN, "권한이 없는 댓글입니다."),
 
     POST_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 게시글입니다."),
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 회원입니다."),
     REPLY_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 댓글입니다."),
 
     INVALID_REQUEST(HttpStatus.BAD_REQUEST, "올바르지 않은 요청입니다."),
@@ -37,7 +39,7 @@ public enum ErrorCode {
     FILE_NAME_MISMATCH(HttpStatus.BAD_REQUEST, "파일명이 일치하지 않습니다."),
     INVALID_FILE_REQUEST(HttpStatus.BAD_REQUEST, "파일 요청 정보가 올바르지 않습니다."),
     MAX_FILE_COUNT_EXCEEDED(HttpStatus.BAD_REQUEST, "최대 5개까지만 업로드할 수 있습니다."),
-    ;
+    REFRESH_TOKEN_NOT_FOUND(HttpStatus.UNAUTHORIZED, "로그인이 만료되었습니다. 다시 로그인 해주세요.");
 
     private HttpStatus status;
     private String message;
