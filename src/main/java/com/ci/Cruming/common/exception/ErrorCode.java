@@ -29,6 +29,8 @@ public enum ErrorCode {
     INVALID_POST_TITLE_SIZE(HttpStatus.BAD_REQUEST, "제목은 최대 100자 까지 입력 가능합니다."),
     INVALID_POST_LEVEL_SIZE(HttpStatus.BAD_REQUEST, "난이도는 최대 50자 까지 입력 가능합니다."),
 
+    INVALID_PROBLEM_POST_FILE(HttpStatus.BAD_REQUEST, "문제 사진이 존재하지 않습니다."),
+
     FAIL_FILE_SAVE(HttpStatus.INTERNAL_SERVER_ERROR, "파일 저장에 실패하였습니다."),
     INVALID_FILE_NAME(HttpStatus.BAD_REQUEST, "잘못된 파일 이름입니다."),
     INVALID_FILE_EXTENSION(HttpStatus.BAD_REQUEST, "지원하지 않는 파일 형식입니다."),
