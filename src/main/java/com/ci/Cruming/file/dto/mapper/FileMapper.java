@@ -45,7 +45,7 @@ public class FileMapper {
                 file.getId(),
                 file.getFileName(),
                 file.getFileKey(),
-                "/api/v1/files/" + file.getFileKey(),
+                "/files/" + file.getFileKey(),
                 file.getFileType(),
                 file.getFileSize(),
                 file.getDisplayOrder(),
