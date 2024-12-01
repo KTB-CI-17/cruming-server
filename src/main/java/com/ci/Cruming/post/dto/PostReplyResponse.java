@@ -1,7 +1,6 @@
 package com.ci.Cruming.post.dto;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 public record PostReplyResponse(
         Long id,
@@ -10,7 +9,6 @@ public record PostReplyResponse(
         String userProfile,
         String userNickname,
         boolean isWriter,
-        List<PostReplyResponse> children,
         Long childCount
 ) {
 }

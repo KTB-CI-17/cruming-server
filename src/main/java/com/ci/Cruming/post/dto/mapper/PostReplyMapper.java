@@ -21,7 +21,7 @@ public class PostReplyMapper {
                 .build();
     }
 
-    public PostReplyResponse toParentPostReplyResponse(User user, PostReply postReply, List<PostReplyResponse> children, Long totalChildCount) {
+    public PostReplyResponse toParentPostReplyResponse(User user, PostReply postReply, Long totalChildCount) {
         boolean isWriter = postReply.getUser().getId().equals(user.getId());
         return new PostReplyResponse(
                 postReply.getId(),
@@ -30,7 +30,6 @@ public class PostReplyMapper {
                 null, // TODO: user profile 가져오도록 수정
                 postReply.getUser().getNickname(),
                 isWriter,
-                children,
                 totalChildCount
         );
     }
@@ -44,7 +43,6 @@ public class PostReplyMapper {
                 null, // TODO: user profile 가져오도록 수정
                 postReply.getUser().getNickname(),
                 isWriter,
-                List.of(),
                 0L
         );
     }
