@@ -65,6 +65,7 @@ public class PostMapper {
                 post.getCreatedAt(),
                 post.getUser().getId(),
                 post.getUser().getNickname(),
+                null, // TODO: user profile 가져오도록 수정
                 post.getUser().getInstagramId(),
                 isWriter,
                 files,

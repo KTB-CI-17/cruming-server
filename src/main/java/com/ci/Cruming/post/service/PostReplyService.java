@@ -64,28 +64,16 @@ public class PostReplyService {
 
     public Page<PostReplyResponse> findPostReplyList(User user, Pageable pageable, Long postId) {
         Page<PostReply> parentReplies = postReplyRepository.findByPostIdAndParentIsNull(postId, pageable);
-
-        List<PostReplyResponse> result = parentReplies.getContent().stream()
-                .map(parent -> {
-                    Page<PostReply> children = postReplyRepository.findByParentId(
-                            parent.getId(),
-                            PageRequest.of(0, CHILD_REPLY_SIZE, Sort.by(Sort.Direction.DESC, "createdAt"))
-                    );
-
-                    List<PostReplyResponse> childResponses = children.getContent().stream()
-                            .map(postReply -> postReplyMapper.toChildPostReplyResponse(user, postReply))
-                            .toList();
-
-                    return postReplyMapper.toParentPostReplyResponse(
-                            user,
-                            parent,
-                            childResponses,
-                            children.getTotalElements()
-                    );
-                })
+        List<PostReplyResponse> postReplyResponses = parentReplies.getContent()
+                .stream()
+                .map(parent -> postReplyMapper.toParentPostReplyResponse(
+                        user,
+                        parent,
+                        postReplyRepository.countByParentId(parent.getId())
+                ))
                 .toList();
 
-        return new PageImpl<>(result, pageable, parentReplies.getTotalElements());
+        return new PageImpl<>(postReplyResponses, pageable, parentReplies.getTotalElements());
     }
 
     public Page<PostReplyResponse> findPostChildReplyList(User user, Long parentId, Pageable pageable) {

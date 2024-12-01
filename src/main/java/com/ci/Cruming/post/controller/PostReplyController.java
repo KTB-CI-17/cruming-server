@@ -71,7 +71,7 @@ public class PostReplyController {
     public ResponseEntity<Page<PostReplyResponse>> getPostReplies(
             @AuthenticationPrincipal User user,
             @PathVariable Long postId,
-            @PageableDefault(size = 10) Pageable pageable) {
+            Pageable pageable) {
         return ResponseEntity.ok(postReplyService.findPostReplyList(user, pageable, postId));
     }
 
@@ -79,7 +79,7 @@ public class PostReplyController {
     public ResponseEntity<Page<PostReplyResponse>> getChildReplies(
             @AuthenticationPrincipal User user,
             @PathVariable Long parentId,
-            @PageableDefault(size = 5) Pageable pageable) {
+            Pageable pageable) {
         return ResponseEntity.ok(postReplyService.findPostChildReplyList(user, parentId, pageable));
     }
 
