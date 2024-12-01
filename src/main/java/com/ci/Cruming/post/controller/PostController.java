@@ -42,8 +42,8 @@ public class PostController {
     public ResponseEntity<Void> createProblem(
             @AuthenticationPrincipal User user,
             @RequestPart(value = "request") PostProblemRequest request,
-            @RequestPart(value = "files", required = false) List<MultipartFile> files) {
-        postService.createProblem(user, request, files);
+            @RequestPart(value = "file") MultipartFile file) {
+        postService.createProblem(user, request, file);
         return ResponseEntity.ok().build();
     }
 
@@ -63,9 +63,8 @@ public class PostController {
     public ResponseEntity<Void> updateProblem(
             @AuthenticationPrincipal User user,
             @PathVariable Long postId,
-            @RequestPart(value = "request") PostProblemRequest request,
-            @RequestPart(value = "files", required = false) List<MultipartFile> files) {
-        postService.updateProblem(user, postId, request, files);
+            @RequestPart(value = "request") PostProblemRequest request) {
+        postService.updateProblem(user, postId, request);
         return ResponseEntity.ok().build();
     }
 
