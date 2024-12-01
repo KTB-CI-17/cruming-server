@@ -18,6 +18,7 @@ public record PostResponse(
         LocalDateTime createdAt,
         Long userId,
         String userNickname,
+        String userProfile,
         String instagram_id,
         boolean isWriter,
         List<FileResponse> files,
