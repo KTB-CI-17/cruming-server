@@ -20,9 +20,15 @@ public class FileValidator {
 
     private static final int MAX_FILES_PER_REQUEST = 5;
 
+    public void validateProblemPostFile(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new CrumingException(ErrorCode.INVALID_PROBLEM_POST_FILE);
+        }
+    }
+
     public void validateFiles(List<MultipartFile> files, List<FileRequest> fileRequests) {
         if (files == null || files.isEmpty()) {
-            return; // 파일이 없는 경우 그냥 return
+            return;
         }
 
         if (files.size() > MAX_FILES_PER_REQUEST) {

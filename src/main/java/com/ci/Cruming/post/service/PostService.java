@@ -59,15 +59,15 @@ public class PostService {
     }
 
     @Transactional
-    public void createProblem(User user, PostProblemRequest request, List<MultipartFile> files) {
+    public void createProblem(User user, PostProblemRequest request, MultipartFile file) {
         postValidator.validatePostProblemRequest(request);
-        fileService.validateFiles(files, request.files());
+        fileService.validateProblemPostFiles(file);
 
         Location location = locationService.getOrCreateLocation(request.location());
         Post post = postMapper.toProblemPost(user, request, location);
-        Post savedPost = postRepository.save(post);
+        postRepository.save(post);
 
-        fileService.uploadFiles(files, request.files(), savedPost);
+        fileService.saveFile(file, post);
     }
 
     @Transactional
@@ -85,18 +85,13 @@ public class PostService {
     }
 
     @Transactional
-    public void updateProblem(User user, Long postId, PostProblemRequest request, List<MultipartFile> files) {
+    public void updateProblem(User user, Long postId, PostProblemRequest request) {
         Post post = getPost(postId);
         postValidator.validatePostAuthor(post, user);
         postValidator.validatePostProblemRequest(request);
-        fileService.validateFiles(files, request.files());
 
         Location location = locationService.getOrCreateLocation(request.location());
         post.update(request.title(), request.content(), request.level(), location);
-
-        if (files != null && !files.isEmpty()) {
-            fileService.uploadFiles(files, request.files(), post);
-        }
     }
 
     @Transactional
