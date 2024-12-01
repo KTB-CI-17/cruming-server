@@ -11,5 +11,6 @@ import org.springframework.stereotype.Repository;
 public interface PostReplyRepository extends JpaRepository<PostReply, Long> {
     Page<PostReply> findByPostIdAndParentIsNull(Long postId, Pageable pageable);
     Page<PostReply> findByParentId(Long parentId, Pageable pageable);
+    Long countByParentId(Long parentId);
     Long countByPost(Post post);
 }
