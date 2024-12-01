@@ -37,6 +37,10 @@ public class FileService {
         fileValidator.validateFiles(files, fileRequests);
     }
 
+    public void validateProblemPostFiles(MultipartFile file) {
+        fileValidator.validateProblemPostFile(file);
+    }
+
     @Transactional
     public List<File> uploadFiles(List<MultipartFile> files, List<FileRequest> fileRequests, Post post) {
         if (files == null || files.isEmpty()) {
@@ -66,6 +70,18 @@ public class FileService {
         }
 
         return savedFiles;
+    }
+
+    @Transactional
+    public File saveFile(MultipartFile inputFile, Post post) {
+        FileMapping fileMapping = fileMapper.toFileMapping(post);
+        fileMappingRepository.save(fileMapping);
+        String fileKey = FileUtils.generateFileKey(FileUtils.getFileExtension(inputFile.getOriginalFilename()));
+
+        String storedUrl = fileStorage.store(inputFile, fileKey);
+
+        File file = fileMapper.toFile(inputFile, fileMapping, post.getUser(), 0, storedUrl, fileKey);
+        return fileRepository.save(file);
     }
 
     public List<File> getFilesByPost(Post post) {
