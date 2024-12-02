@@ -125,4 +125,10 @@ public class PostService {
         return postRepository.findById(postId)
                 .orElseThrow(() -> new CrumingException(ErrorCode.POST_NOT_FOUND));
     }
+
+    @Transactional
+    public void increasePostView(Long postId) {
+        Post post = postRepository.getReferenceById(postId);
+        post.incrementViews();
+    }
 }
