@@ -91,4 +91,10 @@ public class PostController {
         return ResponseEntity.ok().body(postResponse);
     }
 
+    @PostMapping("/{postId}/views")
+    @Operation(summary = "게시글 조회수 증가", description = "게시글의 조회수를 1 증가 시킵니다. (프론트에서 무한 새로고침으로 조회수 증가 방지)")
+    public ResponseEntity<Void> increasePostView(@PathVariable Long postId) {
+        postService.increasePostView(postId);
+        return ResponseEntity.noContent().build();
+    }
 }
