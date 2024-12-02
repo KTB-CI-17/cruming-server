@@ -25,6 +25,7 @@ public class PostReplyMapper {
         boolean isWriter = postReply.getUser().getId().equals(user.getId());
         return new PostReplyResponse(
                 postReply.getId(),
+                postReply.getUser().getId(),
                 postReply.getContent(),
                 postReply.getCreatedAt(),
                 null, // TODO: user profile 가져오도록 수정
@@ -38,6 +39,7 @@ public class PostReplyMapper {
         boolean isWriter = postReply.getUser().getId().equals(user.getId());
         return new PostReplyResponse(
                 postReply.getId(),
+                postReply.getUser().getId(),
                 postReply.getContent(),
                 postReply.getCreatedAt(),
                 null, // TODO: user profile 가져오도록 수정
