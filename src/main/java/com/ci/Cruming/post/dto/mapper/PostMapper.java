@@ -73,7 +73,8 @@ public class PostMapper {
                 files,
                 isLiked,
                 likeCount,
-                replyCount
+                replyCount,
+                post.getViews()
         );
     }
 
