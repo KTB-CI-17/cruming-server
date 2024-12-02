@@ -56,6 +56,9 @@ public class Post {
     @Column(nullable = false)
     private Visibility visibility;
 
+    @Column(nullable = false, columnDefinition = "bigint default 0")
+    private Long views;
+
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -86,4 +89,7 @@ public class Post {
         this.location = location;
     }
 
+    public void incrementViews() {
+        this.views++;
+    }
 }
