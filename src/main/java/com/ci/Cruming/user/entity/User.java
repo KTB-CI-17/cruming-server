@@ -84,4 +84,12 @@ public class User {
     public int hashCode() {
         return Objects.hash(id, platform, platformId);
     }
+
+    public String getHomeGymPlaceName() {
+        if (homeGym == null) {
+            return null;
+        }
+
+        return homeGym.getPlaceName();
+    }
 }
