@@ -1,10 +1,7 @@
 package com.ci.Cruming.post.controller;
 
 import com.ci.Cruming.common.constants.Category;
-import com.ci.Cruming.post.dto.PostListResponse;
-import com.ci.Cruming.post.dto.PostProblemRequest;
-import com.ci.Cruming.post.dto.PostGeneralRequest;
-import com.ci.Cruming.post.dto.PostResponse;
+import com.ci.Cruming.post.dto.*;
 import com.ci.Cruming.post.service.PostService;
 import com.ci.Cruming.user.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
@@ -96,5 +93,14 @@ public class PostController {
     public ResponseEntity<Void> increasePostView(@PathVariable Long postId) {
         postService.increasePostView(postId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/edit/{postId}")
+    @Operation(summary = "게시글 수정을 위한 데이터 조회")
+    public ResponseEntity<PostEditInfo> editPost(
+            @PathVariable Long postId) {
+        PostEditInfo postEditInfo = postService.findPostEditInfo(postId);
+        log.info("postEditInfo={}", postEditInfo);
+        return ResponseEntity.ok(postEditInfo);
     }
 }
