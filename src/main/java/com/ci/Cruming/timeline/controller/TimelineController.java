@@ -1,5 +1,9 @@
 package com.ci.Cruming.timeline.controller;
 
+import java.time.LocalDate;
+import java.util.List;
+
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -57,5 +61,31 @@ public class TimelineController {
             @PathVariable Long timelineId,
             @Valid @RequestBody TimelineReplyRequest request) {
         return ResponseEntity.ok(timelineService.createReply(user, timelineId, request));
+    }
+    
+    @GetMapping("/users/{userId}")
+    public ResponseEntity<List<TimelineResponse>> getUserTimelines(
+            @AuthenticationPrincipal User user,
+            @PathVariable Long userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int limit) {
+        return ResponseEntity.ok(timelineService.getUserTimelines(user, userId, page, limit));
+    }
+    
+    @GetMapping("/users/{userId}/date/{date}")
+    public ResponseEntity<List<TimelineResponse>> getUserTimelinesByDate(
+            @AuthenticationPrincipal User user,
+            @PathVariable Long userId,
+            @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int limit) {
+        return ResponseEntity.ok(timelineService.getUserTimelinesByDate(user, userId, date, page, limit));
+    }
+    
+    @GetMapping("/{timelineId}/detail")
+    public ResponseEntity<TimelineResponse> getTimelineDetail(
+            @AuthenticationPrincipal User user,
+            @PathVariable Long timelineId) {
+        return ResponseEntity.ok(timelineService.getTimelineDetail(user, timelineId));
     }
 }
