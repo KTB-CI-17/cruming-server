@@ -1,6 +1,9 @@
 package com.ci.Cruming.file.service;
 
+import com.ci.Cruming.common.constants.FileStatus;
 import com.ci.Cruming.common.constants.FileTargetType;
+import com.ci.Cruming.common.exception.CrumingException;
+import com.ci.Cruming.common.exception.ErrorCode;
 import com.ci.Cruming.common.utils.FileUtils;
 import com.ci.Cruming.file.dto.FileRequest;
 import com.ci.Cruming.file.dto.mapper.FileMapper;
@@ -16,10 +19,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.ci.Cruming.common.utils.FileUtils.generateFileKey;
 
 @Slf4j
 @Service
@@ -32,6 +38,30 @@ public class FileService {
     private final FileRepository fileRepository;
     private final FileValidator fileValidator;
     private final FileMapper fileMapper;
+
+    public FileMapping createFiles(User user, FileMapping fileMapping, List<MultipartFile> files, List<FileRequest> fileRequests) {
+        if (CollectionUtils.isEmpty(files) || CollectionUtils.isEmpty(fileRequests)) {
+            return null;
+        }
+
+        for (MultipartFile file : files) {
+            FileRequest matchingRequest = fileRequests.stream()
+                    .filter(request -> request.originalFileName().equals(file.getOriginalFilename()))
+                    .findFirst()
+                    .orElseThrow(() -> new CrumingException(ErrorCode.INVALID_FILE_REQUEST));
+            String fileKey = generateFileKey(FileUtils.getFileExtension(file.getOriginalFilename()));
+            String storedUrl = fileStorage.store(file, fileKey);
+            File fileEntity = fileMapper.toFile(file, fileMapping, user, matchingRequest.displayOrder(), storedUrl, fileKey);
+            fileMapping.addFile(fileEntity);
+        }
+
+        return fileMappingRepository.save(fileMapping);
+    }
+
+
+
+
+
 
     public void validateFiles(List<MultipartFile> files, List<FileRequest> fileRequests) {
         fileValidator.validateFiles(files, fileRequests);
@@ -59,7 +89,7 @@ public class FileService {
         for (int i = 0; i < files.size(); i++) {
             MultipartFile file = files.get(i);
 
-            String fileKey = FileUtils.generateFileKey(FileUtils.getFileExtension(file.getOriginalFilename()));
+            String fileKey = generateFileKey(FileUtils.getFileExtension(file.getOriginalFilename()));
 
             String storedUrl = fileStorage.store(file, fileKey);
 
@@ -76,7 +106,7 @@ public class FileService {
     public File saveFile(MultipartFile inputFile, Post post) {
         FileMapping fileMapping = fileMapper.toFileMapping(post);
         fileMappingRepository.save(fileMapping);
-        String fileKey = FileUtils.generateFileKey(FileUtils.getFileExtension(inputFile.getOriginalFilename()));
+        String fileKey = generateFileKey(FileUtils.getFileExtension(inputFile.getOriginalFilename()));
 
         String storedUrl = fileStorage.store(inputFile, fileKey);
 

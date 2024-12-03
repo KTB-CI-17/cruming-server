@@ -80,7 +80,7 @@ public class FileValidator {
         try {
             FileType.valueOf(fileExtension.toUpperCase());
         } catch (IllegalArgumentException e) {
-            log.error("Unsupported file type: {}", fileExtension);
+            log.error("Unsupported fileRequests type: {}", fileExtension);
             throw new CrumingException(ErrorCode.INVALID_FILE_EXTENSION);
         }
     }
