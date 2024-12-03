@@ -1,10 +1,7 @@
 package com.ci.Cruming.post.controller;
 
 import com.ci.Cruming.common.constants.Category;
-import com.ci.Cruming.post.dto.PostListResponse;
-import com.ci.Cruming.post.dto.PostProblemRequest;
-import com.ci.Cruming.post.dto.PostGeneralRequest;
-import com.ci.Cruming.post.dto.PostResponse;
+import com.ci.Cruming.post.dto.*;
 import com.ci.Cruming.post.service.PostService;
 import com.ci.Cruming.user.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,45 +24,34 @@ public class PostController {
 
     private final PostService postService;
 
-    @PostMapping("/general")
-    @Operation(summary = "자유 게시글 작성", description = "자유 게시판에 게시글을 작성합니다.")
-    public ResponseEntity<Void> createGeneral(
+    @PostMapping
+    @Operation(summary = "게시글 작성")
+    public ResponseEntity<Void> createPost(
             @AuthenticationPrincipal User user,
-            @RequestPart(value = "request") PostGeneralRequest request,
-            @RequestPart(value = "files", required = false) List<MultipartFile> files) {
-        postService.createGeneral(user, request, files);
-        return ResponseEntity.ok().build();
+            @RequestPart(value = "locationRequest") PostRequest request,
+            @RequestPart(value = "files", required = false) List<MultipartFile> files
+    ) {
+        postService.createPost(user, request, files);
+        return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/problems")
-    @Operation(summary = "만든 문제 게시글 작성", description = "만든 문제 게시글을 작성합니다.")
-    public ResponseEntity<Void> createProblem(
-            @AuthenticationPrincipal User user,
-            @RequestPart(value = "request") PostProblemRequest request,
-            @RequestPart(value = "file") MultipartFile file) {
-        postService.createProblem(user, request, file);
-        return ResponseEntity.ok().build();
+    @GetMapping("/edit/{postId}")
+    @Operation(summary = "게시글 수정을 위한 데이터 조회")
+    public ResponseEntity<PostEditInfo> editPost(
+            @PathVariable Long postId) {
+        PostEditInfo postEditInfo = postService.findPostEditInfo(postId);
+        return ResponseEntity.ok(postEditInfo);
     }
 
-    @PutMapping("/general/{postId}")
-    @Operation(summary = "자유 게시글 수정", description = "자유 게시판의 게시글을 수정합니다.")
-    public ResponseEntity<Void> updateGeneral(
+    @PostMapping("/{postId}")
+    @Operation(summary = "게시글 수정")
+    public ResponseEntity<Void> updatePost(
             @AuthenticationPrincipal User user,
             @PathVariable Long postId,
-            @RequestPart(value = "request") PostGeneralRequest request,
+            @RequestPart(value = "request") PostEditRequest request,
             @RequestPart(value = "files", required = false) List<MultipartFile> files) {
-        postService.updateGeneral(user, postId, request, files);
-        return ResponseEntity.ok().build();
-    }
-
-    @PutMapping("/problems/{postId}")
-    @Operation(summary = "만든 문제 게시글 수정", description = "만든 문제 게시글을 수정합니다.")
-    public ResponseEntity<Void> updateProblem(
-            @AuthenticationPrincipal User user,
-            @PathVariable Long postId,
-            @RequestPart(value = "request") PostProblemRequest request) {
-        postService.updateProblem(user, postId, request);
-        return ResponseEntity.ok().build();
+        postService.updatePost(user, postId, request, files);
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{postId}")
@@ -97,4 +83,5 @@ public class PostController {
         postService.increasePostView(postId);
         return ResponseEntity.noContent().build();
     }
+
 }

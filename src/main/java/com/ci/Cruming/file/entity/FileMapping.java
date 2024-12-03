@@ -3,6 +3,7 @@ package com.ci.Cruming.file.entity;
 import com.ci.Cruming.common.constants.FileTargetType;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
@@ -28,9 +29,15 @@ public class FileMapping {
     @Column(nullable = false)
     private Long targetId;
 
+    @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @Builder.Default
     @OneToMany(mappedBy = "mapping", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<File> files = new ArrayList<>();
+
+    public void addFile(File fileEntity) {
+        files.add(fileEntity);
+    }
 }
