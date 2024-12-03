@@ -27,6 +27,7 @@
 .idea/**/uiDesigner.xml
 .idea/**/dbnavigator.xml
 
+
 # Gradle
 .idea/**/gradle.xml
 .idea/**/libraries
@@ -101,6 +102,10 @@ fabric.properties
 
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
+
+# Bin directory
+/bin/
+bin/
 
 # Package Files #
 *.jar
