@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Where(clause = "status != 'DELETED'")
 public class File {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

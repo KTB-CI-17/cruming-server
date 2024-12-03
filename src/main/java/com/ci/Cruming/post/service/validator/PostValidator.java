@@ -4,6 +4,7 @@ import com.ci.Cruming.common.constants.Category;
 import com.ci.Cruming.common.exception.CrumingException;
 import com.ci.Cruming.common.exception.ErrorCode;
 import com.ci.Cruming.file.dto.FileRequest;
+import com.ci.Cruming.post.dto.PostEditRequest;
 import com.ci.Cruming.post.dto.PostRequest;
 import com.ci.Cruming.post.entity.Post;
 import com.ci.Cruming.user.entity.User;
@@ -29,6 +30,20 @@ public class PostValidator {
             validateLevel(request.level());
             validateFileRequestSize(request.fileRequests());
             nullCheck(request.locationRequest());
+        }
+    }
+
+    public void validatePostEditRequest(PostEditRequest request) {
+        nullCheck(request);
+        validateTitle(request.title());
+        validateContent(request.content());
+
+        if (Category.isProblem(request.category())) {
+            validateLevel(request.level());
+            nullCheck(request.locationRequest());
+            if (request.deleteFileIds() != null && !request.deleteFileIds().isEmpty()) {
+                throw new CrumingException(ErrorCode.INVALID_EDIT_PROBLEM_POST_FILE);
+            }
         }
     }
 
@@ -80,4 +95,5 @@ public class PostValidator {
             throw new CrumingException(errorCode);
         }
     }
+
 }

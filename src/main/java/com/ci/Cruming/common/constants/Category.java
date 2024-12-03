@@ -7,4 +7,8 @@ public enum Category {
     public static boolean isProblem(Category category) {
         return category.equals(PROBLEM);
     }
+
+    public static boolean isGeneral(Category category) {
+        return category.equals(GENERAL);
+    }
 }

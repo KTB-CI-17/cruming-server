@@ -6,14 +6,24 @@ import lombok.Builder;
 
 import java.util.List;
 
+
 @Builder
 public record PostEditInfo(
         Long id,
         Category category,
         String title,
         String content,
-        String location,
+        Location location,
         String level,
         List<FileResponse> files
 ) {
+    public record Location(
+            String placeName,
+            String address,
+            Double latitude,
+            Double longitude
+    ) {
+        @Builder
+        public Location {}
+    }
 }
