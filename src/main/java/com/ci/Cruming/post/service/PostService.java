@@ -1,11 +1,13 @@
 package com.ci.Cruming.post.service;
 
 import com.ci.Cruming.common.constants.Category;
+import com.ci.Cruming.common.constants.FileTargetType;
 import com.ci.Cruming.common.exception.CrumingException;
 import com.ci.Cruming.common.exception.ErrorCode;
 import com.ci.Cruming.file.dto.FileResponse;
 import com.ci.Cruming.file.dto.mapper.FileMapper;
 import com.ci.Cruming.file.entity.File;
+import com.ci.Cruming.file.entity.FileMapping;
 import com.ci.Cruming.file.service.FileService;
 import com.ci.Cruming.location.entity.Location;
 import com.ci.Cruming.location.service.LocationService;
@@ -26,7 +28,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -46,51 +47,90 @@ public class PostService {
     private final FileMapper fileMapper;
 
     @Transactional
-    public void createGeneral(User user, PostGeneralRequest request, List<MultipartFile> files) {
-        postValidator.validatePostGeneralRequest(request);
-        fileService.validateFiles(files, request.files());
+    public void createPost(User user, PostRequest request, List<MultipartFile> files) {
+        postValidator.validatePostRequest(request);
 
-        Post post = postMapper.toGeneralPost(user, request);
-        Post savedPost = postRepository.save(post);
-
-        fileService.uploadFiles(files, request.files(), savedPost);
-    }
-
-    @Transactional
-    public void createProblem(User user, PostProblemRequest request, MultipartFile file) {
-        postValidator.validatePostProblemRequest(request);
-        fileService.validateProblemPostFiles(file);
-
-        Location location = locationService.getOrCreateLocation(request.location());
-        Post post = postMapper.toProblemPost(user, request, location);
+        Post post = createPostWithLocation(user, request);
         postRepository.save(post);
+        FileMapping fileMapping = FileMapping.builder()
+                .targetType(FileTargetType.POST)
+                .targetId(post.getId())
+                .build();
 
-        fileService.saveFile(file, post);
+        fileMapping = fileService.createFiles(user, fileMapping, files, request.fileRequests());
+        post.setFileMapping(fileMapping);
     }
 
-    @Transactional
-    public void updateGeneral(User user, Long postId, PostGeneralRequest request, List<MultipartFile> files) {
-        Post post = getPost(postId);
-        postValidator.validatePostAuthor(post, user);
-        postValidator.validatePostGeneralRequest(request);
-        fileService.validateFiles(files, request.files());
+    private Post createPostWithLocation(User user, PostRequest request) {
+        Location location = resolveLocation(request);
+        return postMapper.toPost(user, request, location);
+    }
 
-        post.update(request.title(), request.content());
-
-        if (files != null && !files.isEmpty()) {
-            fileService.uploadFiles(files, request.files(), post);
+    private Location resolveLocation(PostRequest request) {
+        if (Category.isProblem(request.category())) {
+            return locationService.getOrCreateLocation(request.locationRequest());
         }
+
+        return null;
     }
+
+
+//    @Transactional
+//    public void createGeneral(User user, PostGeneralRequest request, List<MultipartFile> files) {
+//        postValidator.validatePostGeneralRequest(request);
+//        fileService.validateFiles(files, request.files());
+//
+//        Post post = postMapper.toGeneralPost(user, request);
+//        Post savedPost = postRepository.save(post);
+//
+//        fileService.uploadFiles(files, request.files(), savedPost);
+//    }
+//
+//    @Transactional
+//    public void createProblem(User user, PostProblemRequest request, MultipartFile fileRequests) {
+//        postValidator.validatePostProblemRequest(request);
+//        fileService.validateProblemPostFiles(fileRequests);
+//
+//        Location location = locationService.getOrCreateLocation(request.location());
+//        Post post = postMapper.toProblemPost(user, request, location);
+//        postRepository.save(post);
+//
+//        fileService.saveFile(fileRequests, post);
+//    }
 
     @Transactional
-    public void updateProblem(User user, Long postId, PostProblemRequest request) {
+    public void updatePost(User user, Long postId, PostEditRequest request, List<MultipartFile> files) {
         Post post = getPost(postId);
-        postValidator.validatePostAuthor(post, user);
-        postValidator.validatePostProblemRequest(request);
-
-        Location location = locationService.getOrCreateLocation(request.location());
-        post.update(request.title(), request.content(), request.level(), location);
+//        postValidator.validatePostAuthor(post, user);
+//        postValidator.validateEditPost(request);
+        // fileId로 fileRequests 삭제 처리
+        // 새로운 fileRequests 추가
+        // location 정보 변경되었으면 변경 처리
     }
+
+//    @Transactional
+//    public void updateGeneral(User user, Long postId, PostGeneralRequest request, List<MultipartFile> files) {
+//        Post post = getPost(postId);
+//        postValidator.validatePostAuthor(post, user);
+//        postValidator.validatePostGeneralRequest(request);
+//        fileService.validateFiles(files, request.files());
+//
+//        post.update(request.title(), request.content());
+//
+//        if (files != null && !files.isEmpty()) {
+//            fileService.uploadFiles(files, request.files(), post);
+//        }
+//    }
+//
+//    @Transactional
+//    public void updateProblem(User user, Long postId, PostProblemRequest request) {
+//        Post post = getPost(postId);
+//        postValidator.validatePostAuthor(post, user);
+//        postValidator.validatePostProblemRequest(request);
+//
+//        Location location = locationService.getOrCreateLocation(request.location());
+//        post.update(request.title(), request.content(), request.level(), location);
+//    }
 
     @Transactional
     public void deletePost(User user, Long postId) {
@@ -139,4 +179,5 @@ public class PostService {
         Post post = postRepository.getReferenceById(postId);
         post.incrementViews();
     }
+
 }

@@ -12,33 +12,48 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class PostMapper {
 
-    public Post toGeneralPost(User user, PostGeneralRequest request) {
+    public Post toPost(User user, PostRequest request, Location location) {
         return Post.builder()
                 .user(user)
+                .level(request.level())
+                .category(request.category())
                 .title(request.title())
                 .content(request.content())
-                .category(Category.GENERAL)
+                .level(request.level())
+                .location(location)
                 .visibility(Visibility.PUBLIC)
                 .views(0L)
                 .build();
     }
 
-    public Post toProblemPost(User user, PostProblemRequest request, Location location) {
-        return Post.builder()
-                .user(user)
-                .location(location)
-                .level(request.level())
-                .category(Category.PROBLEM)
-                .title(request.title())
-                .content(request.content())
-                .visibility(Visibility.PUBLIC)
-                .views(0L)
-                .build();
-    }
+//    public Post toGeneralPost(User user, PostGeneralRequest request) {
+//        return Post.builder()
+//                .user(user)
+//                .title(request.title())
+//                .content(request.content())
+//                .category(Category.GENERAL)
+//                .visibility(Visibility.PUBLIC)
+//                .views(0L)
+//                .build();
+//    }
+//
+//    public Post toProblemPost(User user, PostProblemRequest request, Location location) {
+//        return Post.builder()
+//                .user(user)
+//                .location(location)
+//                .level(request.level())
+//                .category(Category.PROBLEM)
+//                .title(request.title())
+//                .content(request.content())
+//                .visibility(Visibility.PUBLIC)
+//                .views(0L)
+//                .build();
+//    }
 
     public PostListResponse toPostListResponse(Post post) {
         return new PostListResponse(
@@ -78,17 +93,14 @@ public class PostMapper {
     }
 
     public PostEditInfo toPostEditInfo(Post post, List<FileResponse> files) {
-        String location = null;
-        if (post.getLocation() != null) {
-            location = post.getLocation().getPlaceName();
-        }
-
         return PostEditInfo.builder()
                 .id(post.getId())
                 .category(post.getCategory())
                 .title(post.getTitle())
                 .content(post.getContent())
-                .location(location)
+                .location(Optional.ofNullable(post.getLocation())
+                        .map(Location::getPlaceName)
+                        .orElse(null))
                 .level(post.getLevel())
                 .files(files)
                 .build();
