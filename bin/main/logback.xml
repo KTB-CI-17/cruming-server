@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- Console Appender 설정: JSON 형식으로 로그를 출력 -->
+    <appender name="JSON_STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder" />
+    </appender>
+
+    <!-- Hibernate 로그를 JSON 형식으로 출력하도록 설정 -->
+    <logger name="org.hibernate" level="INFO" additivity="false">
+        <appender-ref ref="JSON_STDOUT" />
+    </logger>
+
+    <!-- 기타 모든 로그는 JSON_STDOUT을 통해 출력 -->
+    <root level="INFO">
+        <appender-ref ref="JSON_STDOUT" />
+    </root>
+</configuration>

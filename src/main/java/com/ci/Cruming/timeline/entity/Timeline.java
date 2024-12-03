@@ -4,10 +4,7 @@ import com.ci.Cruming.location.entity.Location;
 import com.ci.Cruming.user.entity.User;
 import com.ci.Cruming.common.constants.Visibility;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -15,8 +12,10 @@ import java.util.List;
 
 @Entity
 @Table(name = "timeline")
+@AllArgsConstructor
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Builder
 public class Timeline {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -50,14 +49,16 @@ public class Timeline {
     private LocalDateTime deletedAt;
 
     @OneToMany(mappedBy = "timeline")
+    @Builder.Default
     private List<TimelineLike> likes = new ArrayList<>();
 
     @OneToMany(mappedBy = "timeline")
+    @Builder.Default
     private List<TimelineReply> replies = new ArrayList<>();
 
-    @Builder
-    public Timeline(User user, Location location, String level, String content, 
+    private Timeline(Long id, User user, Location location, String level, String content, 
                    Visibility visibility, LocalDateTime activityAt) {
+        this.id = id;
         this.user = user;
         this.location = location;
         this.level = level;

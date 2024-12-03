@@ -14,6 +14,9 @@ import com.ci.Cruming.user.entity.User;
 import com.ci.Cruming.user.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -107,27 +110,31 @@ public class TimelineService {
         return convertToReplyResponse(reply);
     }
 
-    public List<TimelineResponse> getUserTimelines(User currentUser, Long userId) {
+    public List<TimelineResponse> getUserTimelines(User currentUser, Long userId, int page, int limit) {
         User targetUser = userRepository.findById(userId)
             .orElseThrow(() -> new EntityNotFoundException("User not found"));
             
-        return timelineRepository.findByUserOrderByCreatedAtDesc(targetUser)
-            .stream()
+        Pageable pageable = PageRequest.of(page, limit);
+        Page<Timeline> timelinePage = timelineRepository.findByUserOrderByCreatedAtDesc(targetUser, pageable);
+        
+        return timelinePage.stream()
             .filter(timeline -> !timeline.isDeleted())
             .map(timeline -> convertToResponse(timeline, currentUser))
             .collect(Collectors.toList());
     }
     
-    public List<TimelineResponse> getUserTimelinesByDate(User currentUser, Long userId, LocalDate date) {
+    public List<TimelineResponse> getUserTimelinesByDate(User currentUser, Long userId, LocalDate date, int page, int limit) {
         User targetUser = userRepository.findById(userId)
             .orElseThrow(() -> new EntityNotFoundException("User not found"));
             
         LocalDateTime startOfDay = date.atStartOfDay();
         LocalDateTime endOfDay = date.plusDays(1).atStartOfDay();
         
-        return timelineRepository.findByUserAndActivityAtBetweenOrderByActivityAtDesc(
-                targetUser, startOfDay, endOfDay)
-            .stream()
+        Pageable pageable = PageRequest.of(page, limit);
+        Page<Timeline> timelinePage = timelineRepository.findByUserAndActivityAtBetweenOrderByActivityAtDesc(
+                targetUser, startOfDay, endOfDay, pageable);
+        
+        return timelinePage.stream()
             .filter(timeline -> !timeline.isDeleted())
             .map(timeline -> convertToResponse(timeline, currentUser))
             .collect(Collectors.toList());

@@ -1,8 +1,8 @@
 package com.ci.Cruming.post.service;
 
 import com.ci.Cruming.common.constants.Category;
-import com.ci.Cruming.common.exception.CrumingException;
-import com.ci.Cruming.common.exception.ErrorCode;
+//import com.ci.Cruming.common.exception.CrumingException;
+//import com.ci.Cruming.common.exception.ErrorCode;
 import com.ci.Cruming.location.dto.LocationDTO;
 import com.ci.Cruming.location.entity.Location;
 import com.ci.Cruming.location.repository.LocationRepository;

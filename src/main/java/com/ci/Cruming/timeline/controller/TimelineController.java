@@ -66,16 +66,20 @@ public class TimelineController {
     @GetMapping("/users/{userId}")
     public ResponseEntity<List<TimelineResponse>> getUserTimelines(
             @AuthenticationPrincipal User user,
-            @PathVariable Long userId) {
-        return ResponseEntity.ok(timelineService.getUserTimelines(user, userId));
+            @PathVariable Long userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int limit) {
+        return ResponseEntity.ok(timelineService.getUserTimelines(user, userId, page, limit));
     }
     
     @GetMapping("/users/{userId}/date/{date}")
     public ResponseEntity<List<TimelineResponse>> getUserTimelinesByDate(
             @AuthenticationPrincipal User user,
             @PathVariable Long userId,
-            @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
-        return ResponseEntity.ok(timelineService.getUserTimelinesByDate(user, userId, date));
+            @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int limit) {
+        return ResponseEntity.ok(timelineService.getUserTimelinesByDate(user, userId, date, page, limit));
     }
     
     @GetMapping("/{timelineId}/detail")
