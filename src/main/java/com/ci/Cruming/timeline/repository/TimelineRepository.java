@@ -2,6 +2,8 @@ package com.ci.Cruming.timeline.repository;
 
 import com.ci.Cruming.timeline.entity.Timeline;
 import com.ci.Cruming.user.entity.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -15,4 +17,7 @@ public interface TimelineRepository extends JpaRepository<Timeline, Long> {
     Optional<Timeline> findByIdAndDeletedAtIsNull(Long id);
     List<Timeline> findByUserAndActivityAtBetweenOrderByActivityAtDesc(
         User user, LocalDateTime startDateTime, LocalDateTime endDateTime);
+    Page<Timeline> findByUserOrderByCreatedAtDesc(User user, Pageable pageable);
+    Page<Timeline> findByUserAndActivityAtBetweenOrderByActivityAtDesc(
+        User user, LocalDateTime startDateTime, LocalDateTime endDateTime, Pageable pageable);
 } 

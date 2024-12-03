@@ -28,13 +28,15 @@ public record LocationDTO(
     }
 
     public static LocationDTO fromEntity(Location entity) {
+        if (entity == null) return null;
+        
         return new LocationDTO(
-                entity.getId(),
-                entity.getPlaceName(),
-                entity.getAddress(),
-                entity.getLatitude(),
-                entity.getLongitude(),
-                entity.getCreatedAt()
+            entity.getId(),
+            entity.getPlaceName(),
+            entity.getAddress(),
+            entity.getLatitude(),
+            entity.getLongitude(),
+            entity.getCreatedAt()
         );
     }
 }
