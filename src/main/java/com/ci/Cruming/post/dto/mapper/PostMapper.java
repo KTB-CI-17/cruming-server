@@ -78,12 +78,17 @@ public class PostMapper {
     }
 
     public PostEditInfo toPostEditInfo(Post post, List<FileResponse> files) {
+        String location = null;
+        if (post.getLocation() != null) {
+            location = post.getLocation().getPlaceName();
+        }
+
         return PostEditInfo.builder()
                 .id(post.getId())
                 .category(post.getCategory())
                 .title(post.getTitle())
                 .content(post.getContent())
-                .location(post.getLocation().getPlaceName())
+                .location(location)
                 .level(post.getLevel())
                 .files(files)
                 .build();
