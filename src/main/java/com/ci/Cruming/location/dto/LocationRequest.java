@@ -6,7 +6,4 @@ public record LocationRequest(
         Double latitude,
         Double longitude
 ) {
-    public LocationDTO toDTO() {
-        return new LocationDTO(placeName, address, latitude, longitude);
-    }
 }
