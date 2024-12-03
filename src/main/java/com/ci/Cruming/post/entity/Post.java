@@ -74,8 +74,8 @@ public class Post {
     @Builder.Default
     private List<PostReply> replies = new ArrayList<>();
 
+    @Setter
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "file_mapping_id")
     private FileMapping fileMapping;
 
     public void update(String title, String content) {
