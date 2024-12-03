@@ -3,14 +3,13 @@ package com.ci.Cruming.post.dto.mapper;
 import com.ci.Cruming.common.constants.Category;
 import com.ci.Cruming.common.constants.Visibility;
 import com.ci.Cruming.file.dto.FileResponse;
+import com.ci.Cruming.file.entity.File;
 import com.ci.Cruming.location.entity.Location;
-import com.ci.Cruming.post.dto.PostListResponse;
-import com.ci.Cruming.post.dto.PostProblemRequest;
-import com.ci.Cruming.post.dto.PostGeneralRequest;
-import com.ci.Cruming.post.dto.PostResponse;
+import com.ci.Cruming.post.dto.*;
 import com.ci.Cruming.post.entity.Post;
 import com.ci.Cruming.user.entity.User;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -76,6 +75,18 @@ public class PostMapper {
                 replyCount,
                 post.getViews()
         );
+    }
+
+    public PostEditInfo toPostEditInfo(Post post, List<FileResponse> files) {
+        return PostEditInfo.builder()
+                .id(post.getId())
+                .category(post.getCategory())
+                .title(post.getTitle())
+                .content(post.getContent())
+                .location(post.getLocation().getPlaceName())
+                .level(post.getLevel())
+                .files(files)
+                .build();
     }
 
 }

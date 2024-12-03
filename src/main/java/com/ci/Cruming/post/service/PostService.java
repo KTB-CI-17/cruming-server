@@ -9,10 +9,7 @@ import com.ci.Cruming.file.entity.File;
 import com.ci.Cruming.file.service.FileService;
 import com.ci.Cruming.location.entity.Location;
 import com.ci.Cruming.location.service.LocationService;
-import com.ci.Cruming.post.dto.PostListResponse;
-import com.ci.Cruming.post.dto.PostProblemRequest;
-import com.ci.Cruming.post.dto.PostGeneralRequest;
-import com.ci.Cruming.post.dto.PostResponse;
+import com.ci.Cruming.post.dto.*;
 import com.ci.Cruming.post.dto.mapper.PostMapper;
 import com.ci.Cruming.post.entity.Post;
 import com.ci.Cruming.post.repository.PostLikeRepository;
@@ -29,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -119,6 +117,16 @@ public class PostService {
         Long replyCount = postReplyRepository.countByPost(post);
 
         return postMapper.toPostResponse(user, post, files, isLiked, likeCount, replyCount);
+    }
+
+    public PostEditInfo findPostEditInfo(Long postId) {
+        Post post = getPost(postId);
+        List<FileResponse> files = fileService.getFilesByPost(post)
+                .stream()
+                .map(fileMapper::toFileResponse)
+                .collect(Collectors.toList());
+
+        return postMapper.toPostEditInfo(post, files);
     }
 
     private Post getPost(Long postId) {
