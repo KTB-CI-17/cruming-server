@@ -1,15 +1,12 @@
 package com.ci.Cruming.post.dto.mapper;
 
-import com.ci.Cruming.common.constants.Category;
 import com.ci.Cruming.common.constants.Visibility;
 import com.ci.Cruming.file.dto.FileResponse;
-import com.ci.Cruming.file.entity.File;
 import com.ci.Cruming.location.entity.Location;
 import com.ci.Cruming.post.dto.*;
 import com.ci.Cruming.post.entity.Post;
 import com.ci.Cruming.user.entity.User;
 import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -30,30 +27,6 @@ public class PostMapper {
                 .views(0L)
                 .build();
     }
-
-//    public Post toGeneralPost(User user, PostGeneralRequest request) {
-//        return Post.builder()
-//                .user(user)
-//                .title(request.title())
-//                .content(request.content())
-//                .category(Category.GENERAL)
-//                .visibility(Visibility.PUBLIC)
-//                .views(0L)
-//                .build();
-//    }
-//
-//    public Post toProblemPost(User user, PostProblemRequest request, Location location) {
-//        return Post.builder()
-//                .user(user)
-//                .location(location)
-//                .level(request.level())
-//                .category(Category.PROBLEM)
-//                .title(request.title())
-//                .content(request.content())
-//                .visibility(Visibility.PUBLIC)
-//                .views(0L)
-//                .build();
-//    }
 
     public PostListResponse toPostListResponse(Post post) {
         return new PostListResponse(
@@ -99,11 +72,15 @@ public class PostMapper {
                 .title(post.getTitle())
                 .content(post.getContent())
                 .location(Optional.ofNullable(post.getLocation())
-                        .map(Location::getPlaceName)
+                        .map(loc -> new PostEditInfo.Location(
+                                loc.getPlaceName(),
+                                loc.getAddress(),
+                                loc.getLatitude(),
+                                loc.getLongitude()
+                        ))
                         .orElse(null))
                 .level(post.getLevel())
                 .files(files)
                 .build();
     }
-
 }

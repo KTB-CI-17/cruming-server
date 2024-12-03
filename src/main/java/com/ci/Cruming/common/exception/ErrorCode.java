@@ -45,7 +45,8 @@ public enum ErrorCode {
     FILE_NAME_MISMATCH(HttpStatus.BAD_REQUEST, "파일명이 일치하지 않습니다."),
     INVALID_FILE_REQUEST(HttpStatus.BAD_REQUEST, "파일 정보가 올바르지 않습니다."),
     MAX_FILE_COUNT_EXCEEDED(HttpStatus.BAD_REQUEST, "최대 5개까지만 업로드할 수 있습니다."),
-    REFRESH_TOKEN_NOT_FOUND(HttpStatus.UNAUTHORIZED, "로그인이 만료되었습니다. 다시 로그인 해주세요.");
+    REFRESH_TOKEN_NOT_FOUND(HttpStatus.UNAUTHORIZED, "로그인이 만료되었습니다. 다시 로그인 해주세요.")
+    , INVALID_EDIT_PROBLEM_POST_FILE(HttpStatus.BAD_REQUEST, "문제 사진은 수정할 수 없습니다."),;
 
     private HttpStatus status;
     private String message;
