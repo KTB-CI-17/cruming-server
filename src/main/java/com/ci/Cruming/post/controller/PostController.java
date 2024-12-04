@@ -35,8 +35,7 @@ public class PostController {
     )
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "게시글 작성 성공"),
-            @ApiResponse(responseCode = "400", description = "잘못된 요청"),
-            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
+            @ApiResponse(responseCode = "400", description = "게시글에 필수 데이터가 보함되지 않음")
     })
     @PostMapping
     public ResponseEntity<Void> createPost(
@@ -55,7 +54,8 @@ public class PostController {
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "조회 성공"),
-            @ApiResponse(responseCode = "404", description = "게시글을 찾을 수 없음")
+            @ApiResponse(responseCode = "404", description = "게시글을 찾을 수 없음"),
+            @ApiResponse(responseCode = "400", description = "게시글에 필수 데이터가 보함되지 않음")
     })
     public ResponseEntity<PostEditInfo> editPost(
             @Parameter(description = "수정할 게시글 ID") @PathVariable Long postId) {
@@ -71,7 +71,6 @@ public class PostController {
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "수정 성공"),
             @ApiResponse(responseCode = "400", description = "잘못된 요청"),
-            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
             @ApiResponse(responseCode = "403", description = "권한 없음"),
             @ApiResponse(responseCode = "404", description = "게시글을 찾을 수 없음")
     })
@@ -91,7 +90,6 @@ public class PostController {
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "삭제 성공"),
-            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
             @ApiResponse(responseCode = "403", description = "권한 없음"),
             @ApiResponse(responseCode = "404", description = "게시글을 찾을 수 없음")
     })
