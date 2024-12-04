@@ -229,4 +229,11 @@ gradle-app.setting
 # local file upload
 /uploads
 
+
+# cursor rules
+.cursorrules
+
+# End of https://www.toptal.com/developers/gitignore/api/java,intellij+all,macos
+
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,intellij+all,java,macos,windows,gradle
+

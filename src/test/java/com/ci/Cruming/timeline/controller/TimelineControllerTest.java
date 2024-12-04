@@ -3,9 +3,12 @@ package com.ci.Cruming.timeline.controller;
 import com.ci.Cruming.auth.service.JwtTokenProvider;
 import com.ci.Cruming.common.constants.Platform;
 import com.ci.Cruming.common.constants.Visibility;
+import com.ci.Cruming.timeline.dto.TimelineListResponse;
 import com.ci.Cruming.timeline.dto.TimelineRequest;
 import com.ci.Cruming.timeline.dto.TimelineResponse;
+import com.ci.Cruming.timeline.dto.TimelineUserDTO;
 import com.ci.Cruming.timeline.service.TimelineService;
+import com.ci.Cruming.user.entity.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,6 +16,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -83,11 +90,23 @@ class TimelineControllerTest {
     @WithMockUser
     void createTimeline_Success() throws Exception {
         // given
-        TimelineResponse mockResponse = new TimelineResponse(
-            1L, null, null, "중급", "테스트 타임라인",
-            Visibility.PUBLIC, LocalDateTime.now(), 0, 0,
-            false, null, LocalDateTime.now()
-        );
+        TimelineResponse mockResponse = TimelineResponse.builder()
+            .id(1L)
+            .user(TimelineUserDTO.builder()
+                .id(1L)
+                .nickname("테스트유저")
+                .profileImageUrl(null)
+                .build())
+            .location(null)
+            .level("중급")
+            .content("테스트 타임라인")
+            .visibility(Visibility.PUBLIC)
+            .activityAt(LocalDateTime.now())
+            .likeCount(0)
+            .replyCount(0)
+            .isLiked(false)
+            .createdAt(LocalDateTime.now())
+            .build();
 
         when(timelineService.createTimeline(any(), any())).thenReturn(mockResponse);
 
@@ -121,21 +140,18 @@ class TimelineControllerTest {
     void getUserTimelines_ShouldReturnPaginatedTimelines() throws Exception {
         // Given
         Long userId = 1L;
-        int page = 0;
-        int limit = 10;
-        List<TimelineResponse> responses = Arrays.asList(/* mock timeline responses */);
+        Pageable pageable = PageRequest.of(0, 10);
+        List<TimelineListResponse> timelineResponses = Arrays.asList(/* mock timeline responses */);
+        Page<TimelineListResponse> pageResponse = new PageImpl<>(timelineResponses, pageable, 1);
         
-        when(timelineService.getUserTimelines(any(com.ci.Cruming.user.entity.User.class), eq(userId), eq(page), eq(limit)))
-            .thenReturn(responses);
+        when(timelineService.getUserTimelines(any(User.class), eq(userId), any(Pageable.class)))
+            .thenReturn(pageResponse);
 
         // When & Then
         mockMvc.perform(get("/api/v1/timelines/users/{userId}", userId)
-                .param("page", String.valueOf(page))
-                .param("limit", String.valueOf(limit))
                 .with(user(userDetails)))
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$").isArray());
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
     @Test
@@ -143,25 +159,21 @@ class TimelineControllerTest {
         // Given
         Long userId = 1L;
         String date = "2024-03-20";
-        int page = 0;
-        int limit = 10;
-        List<TimelineResponse> responses = Arrays.asList(/* mock timeline responses */);
+        Pageable pageable = PageRequest.of(0, 10);
+        List<TimelineListResponse> timelineResponses = Arrays.asList(/* mock timeline responses */);
+        Page<TimelineListResponse> pageResponse = new PageImpl<>(timelineResponses, pageable, 1);
         
         when(timelineService.getUserTimelinesByDate(
-            any(com.ci.Cruming.user.entity.User.class), 
+            any(User.class), 
             eq(userId), 
             eq(LocalDate.parse(date)),
-            eq(page), 
-            eq(limit)
-        )).thenReturn(responses);
+            any(Pageable.class)
+        )).thenReturn(pageResponse);
 
         // When & Then
         mockMvc.perform(get("/api/v1/timelines/users/{userId}/date/{date}", userId, date)
-                .param("page", String.valueOf(page))
-                .param("limit", String.valueOf(limit))
                 .with(user(userDetails)))
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$").isArray());
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 } 

@@ -1,23 +1,26 @@
 package com.ci.Cruming.timeline.dto;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 import com.ci.Cruming.common.constants.Visibility;
 import com.ci.Cruming.location.entity.Location;
-import com.ci.Cruming.user.dto.UserDTO;
+import com.ci.Cruming.timeline.entity.Timeline;
+import com.ci.Cruming.user.entity.User;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
+import lombok.Builder;
 
 
-public record TimelineResponse (
+@Builder
+public record TimelineResponse(
     @NotNull
     Long id,
     
     @NotNull
-    UserDTO userDTO,
+    TimelineUserDTO user,
     
     @NotNull
     Location location,
@@ -44,8 +47,29 @@ public record TimelineResponse (
     
     boolean isLiked,
     
-    List<TimelineReplyResponse> replies,
-    
     @NotNull
     LocalDateTime createdAt
-){}
+) {
+    public static TimelineResponse fromEntity(Timeline timeline, User currentUser) {
+        boolean isLiked = timeline.getLikes().stream()
+            .anyMatch(like -> like.getUser().getId().equals(currentUser.getId()));
+
+        return TimelineResponse.builder()
+            .id(timeline.getId())
+            .user(TimelineUserDTO.builder()
+                .id(timeline.getUser().getId())
+                .nickname(timeline.getUser().getNickname())
+                .profileImageUrl(null)
+                .build())
+            .location(timeline.getLocation())
+            .level(timeline.getLevel())
+            .content(timeline.getContent())
+            .visibility(timeline.getVisibility())
+            .activityAt(timeline.getActivityAt())
+            .likeCount(timeline.getLikeCount())
+            .replyCount(timeline.getReplyCount())
+            .isLiked(isLiked)
+            .createdAt(timeline.getCreatedAt())
+            .build();
+    }
+}
