@@ -2,7 +2,9 @@ package com.ci.Cruming.timeline.service;
 
 import com.ci.Cruming.common.constants.Platform;
 import com.ci.Cruming.common.constants.Visibility;
+import com.ci.Cruming.common.dto.PageResponse;
 import com.ci.Cruming.location.entity.Location;
+import com.ci.Cruming.timeline.dto.TimelineListResponse;
 import com.ci.Cruming.timeline.dto.TimelineRequest;
 import com.ci.Cruming.timeline.dto.TimelineResponse;
 import com.ci.Cruming.timeline.entity.Timeline;
@@ -34,6 +36,8 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -166,18 +170,24 @@ class TimelineServiceTest {
         int page = 0;
         int limit = 10;
         Pageable pageable = PageRequest.of(page, limit);
-        List<Timeline> timelines = Arrays.asList(/* mock timelines */);
-        Page<Timeline> timelinePage = new PageImpl<>(timelines);
+        List<Timeline> timelines = Arrays.asList(testTimeline);
+        Page<Timeline> timelinePage = new PageImpl<>(timelines, pageable, 1);
 
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(targetUser));
         when(timelineRepository.findByUserOrderByCreatedAtDesc(eq(targetUser), eq(pageable)))
             .thenReturn(timelinePage);
 
         // When
-        List<TimelineResponse> result = timelineService.getUserTimelines(user, 1L, page, limit);
+        PageResponse<TimelineListResponse> result = timelineService.getUserTimelines(user, 1L, page, limit);
 
         // Then
         assertNotNull(result);
+        assertEquals(1, result.getTotalPages());
+        assertEquals(1L, result.getTotalElements());
+        assertEquals(0, result.getCurrentPage());
+        assertFalse(result.isHasNext());
+        assertNotNull(result.getContent());
+        assertEquals(1, result.getContent().size());
         verify(timelineRepository).findByUserOrderByCreatedAtDesc(eq(targetUser), eq(pageable));
     }
 
@@ -190,8 +200,8 @@ class TimelineServiceTest {
         int page = 0;
         int limit = 10;
         Pageable pageable = PageRequest.of(page, limit);
-        List<Timeline> timelines = Arrays.asList(/* mock timelines */);
-        Page<Timeline> timelinePage = new PageImpl<>(timelines);
+        List<Timeline> timelines = Arrays.asList(testTimeline);
+        Page<Timeline> timelinePage = new PageImpl<>(timelines, pageable, 1);
 
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(targetUser));
         when(timelineRepository.findByUserAndActivityAtBetweenOrderByActivityAtDesc(
@@ -202,10 +212,16 @@ class TimelineServiceTest {
         )).thenReturn(timelinePage);
 
         // When
-        List<TimelineResponse> result = timelineService.getUserTimelinesByDate(user, 1L, date, page, limit);
+        PageResponse<TimelineListResponse> result = timelineService.getUserTimelinesByDate(user, 1L, date, page, limit);
 
         // Then
         assertNotNull(result);
+        assertEquals(1, result.getTotalPages());
+        assertEquals(1L, result.getTotalElements());
+        assertEquals(0, result.getCurrentPage());
+        assertFalse(result.isHasNext());
+        assertNotNull(result.getContent());
+        assertEquals(1, result.getContent().size());
         verify(timelineRepository).findByUserAndActivityAtBetweenOrderByActivityAtDesc(
             eq(targetUser), 
             any(LocalDateTime.class), 

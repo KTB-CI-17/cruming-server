@@ -10,6 +10,7 @@ import java.util.Optional;
 
 @Repository
 public interface TimelineReplyRepository extends JpaRepository<TimelineReply, Long> {
+    List<TimelineReply> findAllByTimelineAndDeletedAtIsNull(Timeline timeline);
     List<TimelineReply> findByTimelineAndParentIsNullOrderByCreatedAtAsc(Timeline timeline);
     Optional<TimelineReply> findByIdAndDeletedAtIsNull(Long id);
 } 

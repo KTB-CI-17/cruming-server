@@ -3,9 +3,12 @@ package com.ci.Cruming.timeline.controller;
 import com.ci.Cruming.auth.service.JwtTokenProvider;
 import com.ci.Cruming.common.constants.Platform;
 import com.ci.Cruming.common.constants.Visibility;
+import com.ci.Cruming.common.dto.PageResponse;
+import com.ci.Cruming.timeline.dto.TimelineListResponse;
 import com.ci.Cruming.timeline.dto.TimelineRequest;
 import com.ci.Cruming.timeline.dto.TimelineResponse;
 import com.ci.Cruming.timeline.service.TimelineService;
+import com.ci.Cruming.user.entity.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -123,10 +126,17 @@ class TimelineControllerTest {
         Long userId = 1L;
         int page = 0;
         int limit = 10;
-        List<TimelineResponse> responses = Arrays.asList(/* mock timeline responses */);
+        List<TimelineListResponse> timelineResponses = Arrays.asList(/* mock timeline responses */);
+        PageResponse<TimelineListResponse> pageResponse = new PageResponse<>(
+            timelineResponses,
+            1,  // totalPages
+            1L, // totalElements
+            0,  // currentPage
+            false // hasNext
+        );
         
-        when(timelineService.getUserTimelines(any(com.ci.Cruming.user.entity.User.class), eq(userId), eq(page), eq(limit)))
-            .thenReturn(responses);
+        when(timelineService.getUserTimelines(any(User.class), eq(userId), eq(page), eq(limit)))
+            .thenReturn(pageResponse);
 
         // When & Then
         mockMvc.perform(get("/api/v1/timelines/users/{userId}", userId)
@@ -135,7 +145,11 @@ class TimelineControllerTest {
                 .with(user(userDetails)))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$").isArray());
+            .andExpect(jsonPath("$.content").isArray())
+            .andExpect(jsonPath("$.totalPages").value(1))
+            .andExpect(jsonPath("$.totalElements").value(1))
+            .andExpect(jsonPath("$.currentPage").value(0))
+            .andExpect(jsonPath("$.hasNext").value(false));
     }
 
     @Test
@@ -145,15 +159,22 @@ class TimelineControllerTest {
         String date = "2024-03-20";
         int page = 0;
         int limit = 10;
-        List<TimelineResponse> responses = Arrays.asList(/* mock timeline responses */);
+        List<TimelineListResponse> timelineResponses = Arrays.asList(/* mock timeline responses */);
+        PageResponse<TimelineListResponse> pageResponse = new PageResponse<>(
+            timelineResponses,
+            1,  // totalPages
+            1L, // totalElements
+            0,  // currentPage
+            false // hasNext
+        );
         
         when(timelineService.getUserTimelinesByDate(
-            any(com.ci.Cruming.user.entity.User.class), 
+            any(User.class), 
             eq(userId), 
             eq(LocalDate.parse(date)),
             eq(page), 
             eq(limit)
-        )).thenReturn(responses);
+        )).thenReturn(pageResponse);
 
         // When & Then
         mockMvc.perform(get("/api/v1/timelines/users/{userId}/date/{date}", userId, date)
@@ -162,6 +183,10 @@ class TimelineControllerTest {
                 .with(user(userDetails)))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$").isArray());
+            .andExpect(jsonPath("$.content").isArray())
+            .andExpect(jsonPath("$.totalPages").value(1))
+            .andExpect(jsonPath("$.totalElements").value(1))
+            .andExpect(jsonPath("$.currentPage").value(0))
+            .andExpect(jsonPath("$.hasNext").value(false));
     }
 } 

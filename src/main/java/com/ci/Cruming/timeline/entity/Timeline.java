@@ -55,18 +55,6 @@ public class Timeline {
     @OneToMany(mappedBy = "timeline")
     @Builder.Default
     private List<TimelineReply> replies = new ArrayList<>();
-
-    private Timeline(Long id, User user, Location location, String level, String content, 
-                   Visibility visibility, LocalDateTime activityAt) {
-        this.id = id;
-        this.user = user;
-        this.location = location;
-        this.level = level;
-        this.content = content;
-        this.visibility = visibility;
-        this.activityAt = activityAt;
-        this.createdAt = LocalDateTime.now();
-    }
     
     public void delete() {
         this.deletedAt = LocalDateTime.now();
@@ -83,4 +71,5 @@ public class Timeline {
     public int getReplyCount() {
         return this.replies.size();
     }
+
 }
