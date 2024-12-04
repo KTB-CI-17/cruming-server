@@ -67,7 +67,6 @@ public class PostService {
         postValidator.validatePostEditRequest(request);
 
         fileService.deleteFiles(request.deleteFileIds());
-
         fileService.editFiles(
                 user,
                 Optional.ofNullable(post.getFileMapping())
@@ -77,7 +76,6 @@ public class PostService {
         );
 
         post.update(request.title(), request.content(), request.level(), updateLocation(request));
-        postRepository.save(post);
     }
 
     @Transactional
