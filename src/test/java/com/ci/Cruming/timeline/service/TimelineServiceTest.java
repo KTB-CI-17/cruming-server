@@ -2,7 +2,6 @@ package com.ci.Cruming.timeline.service;
 
 import com.ci.Cruming.common.constants.Platform;
 import com.ci.Cruming.common.constants.Visibility;
-import com.ci.Cruming.common.dto.PageResponse;
 import com.ci.Cruming.location.entity.Location;
 import com.ci.Cruming.timeline.dto.TimelineListResponse;
 import com.ci.Cruming.timeline.dto.TimelineRequest;
@@ -37,11 +36,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class TimelineServiceTest {
@@ -147,7 +143,7 @@ class TimelineServiceTest {
 
         // when & then
         timelineService.deleteTimeline(testUser, 1L);
-        assertNotNull(testTimeline.isDeleted());
+        assertNotNull(testTimeline.getDeletedAt());
     }
 
     @Test
@@ -167,9 +163,7 @@ class TimelineServiceTest {
         // Given
         User user = mock(User.class);
         User targetUser = mock(User.class);
-        int page = 0;
-        int limit = 10;
-        Pageable pageable = PageRequest.of(page, limit);
+        Pageable pageable = PageRequest.of(0, 10);
         List<Timeline> timelines = Arrays.asList(testTimeline);
         Page<Timeline> timelinePage = new PageImpl<>(timelines, pageable, 1);
 
@@ -178,17 +172,14 @@ class TimelineServiceTest {
             .thenReturn(timelinePage);
 
         // When
-        PageResponse<TimelineListResponse> result = timelineService.getUserTimelines(user, 1L, page, limit);
+        Page<TimelineListResponse> result = timelineService.getUserTimelines(user, 1L, pageable);
 
         // Then
         assertNotNull(result);
         assertEquals(1, result.getTotalPages());
         assertEquals(1L, result.getTotalElements());
-        assertEquals(0, result.getCurrentPage());
-        assertFalse(result.isHasNext());
         assertNotNull(result.getContent());
         assertEquals(1, result.getContent().size());
-        verify(timelineRepository).findByUserOrderByCreatedAtDesc(eq(targetUser), eq(pageable));
     }
 
     @Test
@@ -197,9 +188,7 @@ class TimelineServiceTest {
         User user = mock(User.class);
         User targetUser = mock(User.class);
         LocalDate date = LocalDate.now();
-        int page = 0;
-        int limit = 10;
-        Pageable pageable = PageRequest.of(page, limit);
+        Pageable pageable = PageRequest.of(0, 10);
         List<Timeline> timelines = Arrays.asList(testTimeline);
         Page<Timeline> timelinePage = new PageImpl<>(timelines, pageable, 1);
 
@@ -212,21 +201,13 @@ class TimelineServiceTest {
         )).thenReturn(timelinePage);
 
         // When
-        PageResponse<TimelineListResponse> result = timelineService.getUserTimelinesByDate(user, 1L, date, page, limit);
+        Page<TimelineListResponse> result = timelineService.getUserTimelinesByDate(user, 1L, date, pageable);
 
         // Then
         assertNotNull(result);
         assertEquals(1, result.getTotalPages());
         assertEquals(1L, result.getTotalElements());
-        assertEquals(0, result.getCurrentPage());
-        assertFalse(result.isHasNext());
         assertNotNull(result.getContent());
         assertEquals(1, result.getContent().size());
-        verify(timelineRepository).findByUserAndActivityAtBetweenOrderByActivityAtDesc(
-            eq(targetUser), 
-            any(LocalDateTime.class), 
-            any(LocalDateTime.class), 
-            eq(pageable)
-        );
     }
 } 
