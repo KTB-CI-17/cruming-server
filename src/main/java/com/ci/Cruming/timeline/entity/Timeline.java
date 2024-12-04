@@ -5,6 +5,8 @@ import com.ci.Cruming.user.entity.User;
 import com.ci.Cruming.common.constants.Visibility;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -12,6 +14,8 @@ import java.util.List;
 
 @Entity
 @Table(name = "timeline")
+@SQLDelete(sql = "UPDATE timeline SET deleted_at = NOW() WHERE id = ?")
+@Where(clause = "deleted_at IS NULL")
 @AllArgsConstructor
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -50,31 +54,13 @@ public class Timeline {
 
     @OneToMany(mappedBy = "timeline")
     @Builder.Default
+    @Where(clause = "deleted_at IS NULL")
     private List<TimelineLike> likes = new ArrayList<>();
 
     @OneToMany(mappedBy = "timeline")
     @Builder.Default
+    @Where(clause = "deleted_at IS NULL")
     private List<TimelineReply> replies = new ArrayList<>();
-
-    private Timeline(Long id, User user, Location location, String level, String content, 
-                   Visibility visibility, LocalDateTime activityAt) {
-        this.id = id;
-        this.user = user;
-        this.location = location;
-        this.level = level;
-        this.content = content;
-        this.visibility = visibility;
-        this.activityAt = activityAt;
-        this.createdAt = LocalDateTime.now();
-    }
-    
-    public void delete() {
-        this.deletedAt = LocalDateTime.now();
-    }
-    
-    public boolean isDeleted() {
-        return this.deletedAt != null;
-    }
     
     public int getLikeCount() {
         return this.likes.size();
@@ -83,4 +69,5 @@ public class Timeline {
     public int getReplyCount() {
         return this.replies.size();
     }
+
 }

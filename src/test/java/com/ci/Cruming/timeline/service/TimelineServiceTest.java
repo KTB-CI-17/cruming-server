@@ -3,6 +3,7 @@ package com.ci.Cruming.timeline.service;
 import com.ci.Cruming.common.constants.Platform;
 import com.ci.Cruming.common.constants.Visibility;
 import com.ci.Cruming.location.entity.Location;
+import com.ci.Cruming.timeline.dto.TimelineListResponse;
 import com.ci.Cruming.timeline.dto.TimelineRequest;
 import com.ci.Cruming.timeline.dto.TimelineResponse;
 import com.ci.Cruming.timeline.entity.Timeline;
@@ -34,10 +35,9 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class TimelineServiceTest {
@@ -143,7 +143,7 @@ class TimelineServiceTest {
 
         // when & then
         timelineService.deleteTimeline(testUser, 1L);
-        assertNotNull(testTimeline.isDeleted());
+        assertNotNull(testTimeline.getDeletedAt());
     }
 
     @Test
@@ -163,22 +163,23 @@ class TimelineServiceTest {
         // Given
         User user = mock(User.class);
         User targetUser = mock(User.class);
-        int page = 0;
-        int limit = 10;
-        Pageable pageable = PageRequest.of(page, limit);
-        List<Timeline> timelines = Arrays.asList(/* mock timelines */);
-        Page<Timeline> timelinePage = new PageImpl<>(timelines);
+        Pageable pageable = PageRequest.of(0, 10);
+        List<Timeline> timelines = Arrays.asList(testTimeline);
+        Page<Timeline> timelinePage = new PageImpl<>(timelines, pageable, 1);
 
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(targetUser));
         when(timelineRepository.findByUserOrderByCreatedAtDesc(eq(targetUser), eq(pageable)))
             .thenReturn(timelinePage);
 
         // When
-        List<TimelineResponse> result = timelineService.getUserTimelines(user, 1L, page, limit);
+        Page<TimelineListResponse> result = timelineService.getUserTimelines(user, 1L, pageable);
 
         // Then
         assertNotNull(result);
-        verify(timelineRepository).findByUserOrderByCreatedAtDesc(eq(targetUser), eq(pageable));
+        assertEquals(1, result.getTotalPages());
+        assertEquals(1L, result.getTotalElements());
+        assertNotNull(result.getContent());
+        assertEquals(1, result.getContent().size());
     }
 
     @Test
@@ -187,11 +188,9 @@ class TimelineServiceTest {
         User user = mock(User.class);
         User targetUser = mock(User.class);
         LocalDate date = LocalDate.now();
-        int page = 0;
-        int limit = 10;
-        Pageable pageable = PageRequest.of(page, limit);
-        List<Timeline> timelines = Arrays.asList(/* mock timelines */);
-        Page<Timeline> timelinePage = new PageImpl<>(timelines);
+        Pageable pageable = PageRequest.of(0, 10);
+        List<Timeline> timelines = Arrays.asList(testTimeline);
+        Page<Timeline> timelinePage = new PageImpl<>(timelines, pageable, 1);
 
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(targetUser));
         when(timelineRepository.findByUserAndActivityAtBetweenOrderByActivityAtDesc(
@@ -202,15 +201,13 @@ class TimelineServiceTest {
         )).thenReturn(timelinePage);
 
         // When
-        List<TimelineResponse> result = timelineService.getUserTimelinesByDate(user, 1L, date, page, limit);
+        Page<TimelineListResponse> result = timelineService.getUserTimelinesByDate(user, 1L, date, pageable);
 
         // Then
         assertNotNull(result);
-        verify(timelineRepository).findByUserAndActivityAtBetweenOrderByActivityAtDesc(
-            eq(targetUser), 
-            any(LocalDateTime.class), 
-            any(LocalDateTime.class), 
-            eq(pageable)
-        );
+        assertEquals(1, result.getTotalPages());
+        assertEquals(1L, result.getTotalElements());
+        assertNotNull(result.getContent());
+        assertEquals(1, result.getContent().size());
     }
 } 

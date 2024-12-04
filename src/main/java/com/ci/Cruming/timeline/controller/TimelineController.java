@@ -1,17 +1,18 @@
 package com.ci.Cruming.timeline.controller;
 
+import java.net.URI;
 import java.time.LocalDate;
-import java.util.List;
 
+import com.ci.Cruming.timeline.dto.*;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
-import com.ci.Cruming.timeline.dto.TimelineReplyRequest;
-import com.ci.Cruming.timeline.dto.TimelineReplyResponse;
-import com.ci.Cruming.timeline.dto.TimelineRequest;
-import com.ci.Cruming.timeline.dto.TimelineResponse;
 import com.ci.Cruming.timeline.service.TimelineService;
 import com.ci.Cruming.user.entity.User;
 
@@ -25,10 +26,11 @@ public class TimelineController {
     private final TimelineService timelineService;
     
     @PostMapping
-    public ResponseEntity<TimelineResponse> createTimeline(
+    public ResponseEntity<Void> createTimeline(
             @AuthenticationPrincipal User user,
             @Valid @RequestBody TimelineRequest request) {
-        return ResponseEntity.ok(timelineService.createTimeline(user, request));
+        TimelineResponse response = timelineService.createTimeline(user, request);
+        return ResponseEntity.created(URI.create("/api/v1/timelines/" + response.id())).build();
     }
     
     @DeleteMapping("/{timelineId}")
@@ -39,20 +41,12 @@ public class TimelineController {
         return ResponseEntity.noContent().build();
     }
     
-    @PostMapping("/{timelineId}/likes")
-    public ResponseEntity<Void> likeTimeline(
+    @PostMapping("/{timelineId}/likes/toggle")
+    public ResponseEntity<Boolean> toggleTimelineLike(
             @AuthenticationPrincipal User user,
             @PathVariable Long timelineId) {
-        timelineService.likeTimeline(user, timelineId);
-        return ResponseEntity.noContent().build();
-    }
-    
-    @DeleteMapping("/{timelineId}/likes")
-    public ResponseEntity<Void> unlikeTimeline(
-            @AuthenticationPrincipal User user,
-            @PathVariable Long timelineId) {
-        timelineService.unlikeTimeline(user, timelineId);
-        return ResponseEntity.noContent().build();
+        boolean isLiked = timelineService.toggleTimelineLike(user, timelineId);
+        return ResponseEntity.ok(isLiked);
     }
     
     @PostMapping("/{timelineId}/replies")
@@ -64,22 +58,20 @@ public class TimelineController {
     }
     
     @GetMapping("/users/{userId}")
-    public ResponseEntity<List<TimelineResponse>> getUserTimelines(
+    public ResponseEntity<Page<TimelineListResponse>> getUserTimelines(
             @AuthenticationPrincipal User user,
             @PathVariable Long userId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int limit) {
-        return ResponseEntity.ok(timelineService.getUserTimelines(user, userId, page, limit));
+            @PageableDefault(size = 10) Pageable pageable) {
+        return ResponseEntity.ok(timelineService.getUserTimelines(user, userId, pageable));
     }
     
     @GetMapping("/users/{userId}/date/{date}")
-    public ResponseEntity<List<TimelineResponse>> getUserTimelinesByDate(
+    public ResponseEntity<Page<TimelineListResponse>> getUserTimelinesByDate(
             @AuthenticationPrincipal User user,
             @PathVariable Long userId,
             @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int limit) {
-        return ResponseEntity.ok(timelineService.getUserTimelinesByDate(user, userId, date, page, limit));
+            @PageableDefault(size = 10) Pageable pageable) {
+        return ResponseEntity.ok(timelineService.getUserTimelinesByDate(user, userId, date, pageable));
     }
     
     @GetMapping("/{timelineId}/detail")
@@ -87,5 +79,13 @@ public class TimelineController {
             @AuthenticationPrincipal User user,
             @PathVariable Long timelineId) {
         return ResponseEntity.ok(timelineService.getTimelineDetail(user, timelineId));
+    }
+    
+    @GetMapping("/{timelineId}/replies")
+    public ResponseEntity<Page<TimelineReplyResponse>> getTimelineReplies(
+            @AuthenticationPrincipal User user,
+            @PathVariable Long timelineId,
+            @PageableDefault(size = 10) Pageable pageable) {
+        return ResponseEntity.ok(timelineService.getTimelineReplies(user, timelineId, pageable));
     }
 }
