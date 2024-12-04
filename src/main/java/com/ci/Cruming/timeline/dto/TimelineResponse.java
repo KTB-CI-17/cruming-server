@@ -1,14 +1,10 @@
 package com.ci.Cruming.timeline.dto;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import com.ci.Cruming.common.constants.Visibility;
 import com.ci.Cruming.location.entity.Location;
 import com.ci.Cruming.timeline.entity.Timeline;
-import com.ci.Cruming.timeline.entity.TimelineReply;
-import com.ci.Cruming.user.dto.UserDTO;
 import com.ci.Cruming.user.entity.User;
 
 import jakarta.validation.constraints.NotBlank;
@@ -24,7 +20,7 @@ public record TimelineResponse(
     Long id,
     
     @NotNull
-    UserDTO userDTO,
+    TimelineUserDTO user,
     
     @NotNull
     Location location,
@@ -51,22 +47,20 @@ public record TimelineResponse(
     
     boolean isLiked,
     
-    List<TimelineReplyResponse> replies,
-    
     @NotNull
     LocalDateTime createdAt
 ) {
-    public static TimelineResponse fromEntity(Timeline timeline, User currentUser, List<TimelineReply> replies) {
+    public static TimelineResponse fromEntity(Timeline timeline, User currentUser) {
         boolean isLiked = timeline.getLikes().stream()
             .anyMatch(like -> like.getUser().getId().equals(currentUser.getId()));
 
-        List<TimelineReplyResponse> replyResponses = replies.stream()
-            .map(TimelineReplyResponse::fromEntity)
-            .collect(Collectors.toList());
-
         return TimelineResponse.builder()
             .id(timeline.getId())
-            .userDTO(UserDTO.fromEntity(timeline.getUser()))
+            .user(TimelineUserDTO.builder()
+                .id(timeline.getUser().getId())
+                .nickname(timeline.getUser().getNickname())
+                .profileImageUrl(null)
+                .build())
             .location(timeline.getLocation())
             .level(timeline.getLevel())
             .content(timeline.getContent())
@@ -75,7 +69,6 @@ public record TimelineResponse(
             .likeCount(timeline.getLikeCount())
             .replyCount(timeline.getReplyCount())
             .isLiked(isLiked)
-            .replies(replyResponses)
             .createdAt(timeline.getCreatedAt())
             .build();
     }

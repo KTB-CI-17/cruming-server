@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.ci.Cruming.timeline.entity.TimelineReply;
+import com.ci.Cruming.user.entity.User;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -28,12 +29,14 @@ public record TimelineReplyResponse(
     @NotNull
     LocalDateTime createdAt,
     
-    LocalDateTime updatedAt
+    LocalDateTime updatedAt,
+    
+    boolean isWriter
 ) {
-    public static TimelineReplyResponse fromEntity(TimelineReply reply) {
+    public static TimelineReplyResponse fromEntity(TimelineReply reply, User currentUser) {
         List<TimelineReplyResponse> childrenResponses = reply.getChildren().stream()
             .filter(child -> !child.isDeleted())
-            .map(TimelineReplyResponse::fromEntity)
+            .map(child -> fromEntity(child, currentUser))
             .collect(Collectors.toList());
 
         return TimelineReplyResponse.builder()
@@ -47,6 +50,7 @@ public record TimelineReplyResponse(
             .children(childrenResponses)
             .createdAt(reply.getCreatedAt())
             .updatedAt(reply.getUpdatedAt())
+            .isWriter(reply.getUser().getId().equals(currentUser.getId()))
             .build();
     }
 }
