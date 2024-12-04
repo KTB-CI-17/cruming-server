@@ -3,15 +3,13 @@ package com.ci.Cruming.timeline.controller;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.ci.Cruming.common.dto.PageResponse;
+import com.ci.Cruming.timeline.dto.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
-import com.ci.Cruming.timeline.dto.TimelineReplyRequest;
-import com.ci.Cruming.timeline.dto.TimelineReplyResponse;
-import com.ci.Cruming.timeline.dto.TimelineRequest;
-import com.ci.Cruming.timeline.dto.TimelineResponse;
 import com.ci.Cruming.timeline.service.TimelineService;
 import com.ci.Cruming.user.entity.User;
 
@@ -64,7 +62,7 @@ public class TimelineController {
     }
     
     @GetMapping("/users/{userId}")
-    public ResponseEntity<List<TimelineResponse>> getUserTimelines(
+    public ResponseEntity<PageResponse<TimelineListResponse>> getUserTimelines(
             @AuthenticationPrincipal User user,
             @PathVariable Long userId,
             @RequestParam(defaultValue = "0") int page,
@@ -73,7 +71,7 @@ public class TimelineController {
     }
     
     @GetMapping("/users/{userId}/date/{date}")
-    public ResponseEntity<List<TimelineResponse>> getUserTimelinesByDate(
+    public ResponseEntity<PageResponse<TimelineListResponse>> getUserTimelinesByDate(
             @AuthenticationPrincipal User user,
             @PathVariable Long userId,
             @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date,

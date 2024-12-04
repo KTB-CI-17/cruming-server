@@ -157,4 +157,7 @@ Temporary Items
 # local file upload
 /uploads
 
+# cursor rules
+.cursorrules
+
 # End of https://www.toptal.com/developers/gitignore/api/java,intellij+all,macos
