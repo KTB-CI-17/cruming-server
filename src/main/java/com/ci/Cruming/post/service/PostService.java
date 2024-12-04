@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -66,7 +67,14 @@ public class PostService {
         postValidator.validatePostEditRequest(request);
 
         fileService.deleteFiles(request.deleteFileIds());
-        fileService.editFiles(user, post.getFileMapping(), newFiles, request.newFiles());
+
+        fileService.editFiles(
+                user,
+                Optional.ofNullable(post.getFileMapping())
+                        .orElseGet(() -> createFileMapping(post.getId())),
+                newFiles,
+                request.newFiles()
+        );
 
         post.update(request.title(), request.content(), request.level(), updateLocation(request));
         postRepository.save(post);
