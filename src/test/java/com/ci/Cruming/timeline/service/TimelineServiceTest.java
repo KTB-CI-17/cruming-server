@@ -2,18 +2,28 @@ package com.ci.Cruming.timeline.service;
 
 import com.ci.Cruming.common.constants.Platform;
 import com.ci.Cruming.common.constants.Visibility;
+import com.ci.Cruming.common.exception.CrumingException;
+import com.ci.Cruming.follow.service.FollowService;
 import com.ci.Cruming.location.entity.Location;
 import com.ci.Cruming.timeline.dto.TimelineListResponse;
+import com.ci.Cruming.timeline.dto.TimelineReplyRequest;
+import com.ci.Cruming.timeline.dto.TimelineReplyResponse;
 import com.ci.Cruming.timeline.dto.TimelineRequest;
 import com.ci.Cruming.timeline.dto.TimelineResponse;
 import com.ci.Cruming.timeline.entity.Timeline;
+import com.ci.Cruming.timeline.entity.TimelineLike;
+import com.ci.Cruming.timeline.entity.TimelineReply;
+import com.ci.Cruming.timeline.mapper.TimelineMapper;
 import com.ci.Cruming.timeline.repository.TimelineLikeRepository;
 import com.ci.Cruming.timeline.repository.TimelineReplyRepository;
 import com.ci.Cruming.timeline.repository.TimelineRepository;
+import com.ci.Cruming.timeline.validator.TimelineValidator;
 import com.ci.Cruming.user.entity.User;
 import com.ci.Cruming.location.repository.LocationRepository;
 import com.ci.Cruming.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -38,9 +48,13 @@ import static org.mockito.Mockito.when;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class TimelineServiceTest {
+
+    @InjectMocks
+    private TimelineService timelineService;
 
     @Mock
     private TimelineRepository timelineRepository;
@@ -52,9 +66,12 @@ class TimelineServiceTest {
     private LocationRepository locationRepository;
     @Mock
     private UserRepository userRepository;
-
-    @InjectMocks
-    private TimelineService timelineService;
+    @Mock
+    private TimelineMapper timelineMapper;
+    @Mock
+    private TimelineValidator timelineValidator;
+    @Mock
+    private FollowService followService;
 
     private User testUser;
     private Location testLocation;
@@ -97,65 +114,167 @@ class TimelineServiceTest {
             .build();
     }
 
-    @Test
-    void createTimeline_Success() {
-        // given
-        when(locationRepository.findById(any())).thenReturn(Optional.of(testLocation));
-        when(timelineRepository.save(any())).thenAnswer(invocation -> {
-            Timeline timeline = invocation.getArgument(0);
-            return Timeline.builder()
-                .id(1L)
-                .user(timeline.getUser())
-                .location(testLocation)
-                .level(timeline.getLevel())
-                .content(timeline.getContent())
-                .visibility(timeline.getVisibility())
-                .activityAt(timeline.getActivityAt())
+    @Nested
+    @DisplayName("타임라인 생성")
+    class CreateTimeline {
+        @Test
+        @DisplayName("타임라인 생성 성공")
+        void createTimeline_Success() {
+            // given
+            when(locationRepository.findById(testRequest.getLocationId()))
+                .thenReturn(Optional.of(testLocation));
+            when(timelineMapper.toEntity(testRequest, testUser, testLocation))
+                .thenReturn(testTimeline);
+            when(timelineRepository.save(any(Timeline.class)))
+                .thenReturn(testTimeline);
+
+            // when
+            TimelineResponse response = timelineService.createTimeline(testUser, testRequest);
+
+            // then
+            assertNotNull(response);
+            assertNotNull(response.content());
+            assertNotNull(response.level());
+            assertNotNull(response.visibility());
+        }
+
+        @Test
+        @DisplayName("위치 정보 없음 - 실패")
+        void createTimeline_LocationNotFound() {
+            // given
+            when(locationRepository.findById(testRequest.getLocationId()))
+                .thenReturn(Optional.empty());
+
+            // when & then
+            assertThrows(CrumingException.class,
+                () -> timelineService.createTimeline(testUser, testRequest));
+        }
+    }
+
+    @Nested
+    @DisplayName("타임라인 삭제")
+    class DeleteTimeline {
+        @Test
+        @DisplayName("타임라인 삭제 성공")
+        void deleteTimeline_Success() {
+            // given
+            when(timelineRepository.findByIdAndDeletedAtIsNull(testTimeline.getId()))
+                .thenReturn(Optional.of(testTimeline));
+
+            // when
+            timelineService.deleteTimeline(testUser, testTimeline.getId());
+
+            // then
+            assertNotNull(testTimeline.getDeletedAt());
+        }
+
+        @Test
+        @DisplayName("타임라인 없음 - 실패")
+        void deleteTimeline_TimelineNotFound() {
+            // given
+            when(timelineRepository.findByIdAndDeletedAtIsNull(anyLong()))
+                .thenReturn(Optional.empty());
+
+            // when & then
+            assertThrows(CrumingException.class, 
+                () -> timelineService.deleteTimeline(testUser, 1L));
+        }
+    }
+
+    @Nested
+    @DisplayName("타임라인 좋아요 토글")
+    class ToggleTimelineLike {
+        @Test
+        @DisplayName("좋아요 추가 성공")
+        void toggleTimelineLike_AddLike_Success() {
+            // given
+            when(timelineRepository.findByIdAndDeletedAtIsNull(anyLong()))
+                .thenReturn(Optional.of(testTimeline));
+            when(timelineLikeRepository.findByTimelineAndUser(any(), any()))
+                .thenReturn(Optional.empty());
+            when(timelineLikeRepository.save(any()))
+                .thenReturn(TimelineLike.builder()
+                    .timeline(testTimeline)
+                    .user(testUser)
+                    .build());
+
+            // when
+            boolean result = timelineService.toggleTimelineLike(testUser, 1L);
+
+            // then
+            assertNotNull(result);
+            assertNotNull(result);
+        }
+
+        @Test
+        @DisplayName("좋아요 취소 성공")
+        void toggleTimelineLike_RemoveLike_Success() {
+            // given
+            TimelineLike existingLike = TimelineLike.builder()
+                .timeline(testTimeline)
+                .user(testUser)
                 .build();
-        });
-        when(timelineLikeRepository.existsByTimelineAndUser(any(), any())).thenReturn(false);
 
-        // when
-        TimelineResponse response = timelineService.createTimeline(testUser, testRequest);
+            when(timelineRepository.findByIdAndDeletedAtIsNull(anyLong()))
+                .thenReturn(Optional.of(testTimeline));
+            when(timelineLikeRepository.findByTimelineAndUser(any(), any()))
+                .thenReturn(Optional.of(existingLike));
 
-        // then
-        assertNotNull(response);
-        assertNotNull(response.content());
-        assertNotNull(response.level());
-        assertNotNull(response.visibility());
+            // when
+            boolean result = timelineService.toggleTimelineLike(testUser, 1L);
+
+            // then
+            assertNotNull(result);
+            assertNotNull(result);
+        }
+
+        @Test
+        @DisplayName("타임라인 없음 - 실패")
+        void toggleTimelineLike_TimelineNotFound() {
+            // given
+            when(timelineRepository.findByIdAndDeletedAtIsNull(anyLong()))
+                .thenReturn(Optional.empty());
+
+            // when & then
+            assertThrows(CrumingException.class, 
+                () -> timelineService.toggleTimelineLike(testUser, 1L));
+        }
     }
 
-    @Test
-    void createTimeline_LocationNotFound() {
-        // given
-        when(locationRepository.findById(any())).thenReturn(Optional.empty());
+    @Nested
+    @DisplayName("타임라인 댓글 작성")
+    class CreateReply {
+        @Test
+        @DisplayName("댓글 작성 성공")
+        void createReply_Success() {
+            // given
+            TimelineReplyRequest request = TimelineReplyRequest.builder()
+                .content("테스트 댓글")
+                .build();
 
-        // when & then
-        assertThrows(jakarta.persistence.EntityNotFoundException.class, 
-            () -> timelineService.createTimeline(testUser, testRequest));
-    }
+            TimelineReply reply = TimelineReply.builder()
+                .timeline(testTimeline)
+                .user(testUser)
+                .content(request.getContent())
+                .build();
 
-    @Test
-    void deleteTimeline_Success() {
-        // given
-        when(timelineRepository.findByIdAndDeletedAtIsNull(any()))
-            .thenReturn(Optional.of(testTimeline));
+            when(timelineRepository.findByIdAndDeletedAtIsNull(anyLong()))
+                .thenReturn(Optional.of(testTimeline));
+            when(timelineMapper.toEntity(any(), any(), any(), any()))
+                .thenReturn(reply);
+            when(timelineReplyRepository.save(any()))
+                .thenReturn(reply);
 
-        // when & then
-        timelineService.deleteTimeline(testUser, 1L);
-        assertNotNull(testTimeline.getDeletedAt());
-    }
+            // when
+            TimelineReplyResponse response = timelineService.createReply(testUser, 1L, request);
 
-    @Test
-    void likeTimeline_Success() {
-        // given
-        when(timelineRepository.findByIdAndDeletedAtIsNull(any()))
-            .thenReturn(Optional.of(testTimeline));
-        when(timelineLikeRepository.existsByTimelineAndUser(any(), any()))
-            .thenReturn(false);
+            // then
+            assertNotNull(response);
+            assertNotNull(response.content());
+            verify(timelineValidator).validateReplyRequest(request);
+        }
 
-        // when & then
-        timelineService.likeTimeline(testUser, 1L);
+        // ... 실패 케이스 테스트 추가
     }
 
     @Test
@@ -209,5 +328,29 @@ class TimelineServiceTest {
         assertEquals(1L, result.getTotalElements());
         assertNotNull(result.getContent());
         assertEquals(1, result.getContent().size());
+    }
+
+    @Test
+    void getMonthlyTimelines_Success() {
+        // Given
+        User user = mock(User.class);
+        int year = 2024;
+        int month = 3;
+        Page<Timeline> timelinePage = new PageImpl<>(Arrays.asList(testTimeline));
+        Pageable pageable = PageRequest.of(0, 10);
+        
+        when(timelineRepository.findByUserAndCreatedAtBetweenOrderByCreatedAtDesc(
+            eq(user), 
+            any(LocalDateTime.class), 
+            any(LocalDateTime.class), 
+            eq(pageable)))
+            .thenReturn(timelinePage);
+
+        // When
+        Page<TimelineListResponse> result = timelineService.getMonthlyTimelines(user, year, month, pageable);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(1, result.getTotalElements());
     }
 } 

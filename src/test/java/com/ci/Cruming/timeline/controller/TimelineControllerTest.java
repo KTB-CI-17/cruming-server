@@ -176,4 +176,24 @@ class TimelineControllerTest {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
+
+    @Test
+    @WithMockUser
+    void getMonthlyTimelines_Success() throws Exception {
+        // Given
+        int year = 2024;
+        int month = 3;
+        Pageable pageable = PageRequest.of(0, 10);
+        List<TimelineListResponse> timelineResponses = Arrays.asList(/* mock timeline responses */);
+        Page<TimelineListResponse> pageResponse = new PageImpl<>(timelineResponses, pageable, 1);
+        
+        when(timelineService.getMonthlyTimelines(any(User.class), eq(year), eq(month), any(Pageable.class)))
+            .thenReturn(pageResponse);
+
+        // When & Then
+        mockMvc.perform(get("/api/v1/timelines/monthly/{year}/{month}", year, month)
+                .with(user(userDetails)))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
 } 
