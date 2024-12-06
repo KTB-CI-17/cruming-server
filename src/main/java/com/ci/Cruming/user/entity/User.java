@@ -63,6 +63,9 @@ public class User {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
+    @Column(name = "profile_image_url")
+    private String profileImageUrl;
+
     public User(String nickname, Platform platform, String platformId) {
         this.nickname = nickname;
         this.platform = platform;
@@ -91,5 +94,9 @@ public class User {
         }
 
         return homeGym.getPlaceName();
+    }
+
+    public void updateProfileImageUrl(String profileImageUrl) {
+        this.profileImageUrl = profileImageUrl;
     }
 }

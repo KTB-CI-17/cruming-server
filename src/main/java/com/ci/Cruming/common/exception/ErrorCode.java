@@ -54,7 +54,10 @@ public enum ErrorCode {
 
     // General
     INVALID_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),
-    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다. 문제가 지속되면 관리자에게 문의해 주세요.");
+    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다. 문제가 지속되면 관리자에게 문의해 주세요."),
+    CANNOT_FOLLOW_SELF(HttpStatus.BAD_REQUEST, "자기 자신을 팔로우할 수 없습니다."),
+    ALREADY_FOLLOWING(HttpStatus.BAD_REQUEST, "이미 팔로우하고 있는 유저입니다."),
+    NOT_FOLLOWING(HttpStatus.BAD_REQUEST, "팔로우하고 있지 않은 유저입니다.");
 
     private final HttpStatus status;
     private final String message;
