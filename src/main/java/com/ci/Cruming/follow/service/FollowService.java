@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -78,5 +79,12 @@ public class FollowService {
                         follow.getFollowing().getNickname(),
                         follow.getFollowing().getProfileImageUrl()
                 ));
+    }
+
+    @Transactional(readOnly = true)
+    public List<Long> getAllFollowingIds(Long userId) {
+        return followRepository.findByFollowerId(userId).stream()
+            .map(follow -> follow.getFollowing().getId())
+            .toList();
     }
 } 
