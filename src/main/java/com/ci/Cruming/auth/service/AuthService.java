@@ -88,6 +88,7 @@ public class AuthService {
             .nickname(profile.getNickname())
             .platform(platform)
             .platformId(profile.getPlatformId())
+            .profileImageUrl(profile.getImage())
             .build();
         System.out.println("user = " + user);
         return userRepository.save(user);
