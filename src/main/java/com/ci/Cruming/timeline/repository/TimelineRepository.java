@@ -20,4 +20,11 @@ public interface TimelineRepository extends JpaRepository<Timeline, Long> {
     Page<Timeline> findByUserOrderByCreatedAtDesc(User user, Pageable pageable);
     Page<Timeline> findByUserAndActivityAtBetweenOrderByActivityAtDesc(
         User user, LocalDateTime startDateTime, LocalDateTime endDateTime, Pageable pageable);
+    Page<Timeline> findByUserAndCreatedAtBetweenOrderByCreatedAtDesc(
+        User user, 
+        LocalDateTime startDateTime, 
+        LocalDateTime endDateTime, 
+        Pageable pageable
+    );
+    Page<Timeline> findByUserIdInOrderByCreatedAtDesc(List<Long> userIds, Pageable pageable);
 } 

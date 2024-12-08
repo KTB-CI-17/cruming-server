@@ -12,8 +12,12 @@ import com.ci.Cruming.timeline.repository.TimelineReplyRepository;
 import com.ci.Cruming.timeline.repository.TimelineRepository;
 import com.ci.Cruming.user.entity.User;
 import com.ci.Cruming.user.repository.UserRepository;
-import jakarta.persistence.EntityNotFoundException;
+import com.ci.Cruming.common.exception.CrumingException;
+import com.ci.Cruming.common.exception.ErrorCode;
+import com.ci.Cruming.follow.service.FollowService;
+import com.ci.Cruming.timeline.validator.TimelineValidator;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -33,11 +37,16 @@ public class TimelineService {
     private final LocationRepository locationRepository;
     private final UserRepository userRepository;
     private final TimelineMapper timelineMapper;
+    private final TimelineValidator timelineValidator;
+    @Autowired
+    private FollowService followService;
 
     @Transactional
     public TimelineResponse createTimeline(User user, TimelineRequest request) {
+        timelineValidator.validateTimelineRequest(request);
+        
         Location location = locationRepository.findById(request.getLocationId())
-            .orElseThrow(() -> new EntityNotFoundException("Location not found"));
+            .orElseThrow(() -> new CrumingException(ErrorCode.LOCATION_NOT_FOUND));
 
         Timeline timeline = timelineMapper.toEntity(request, user, location);
         timeline = timelineRepository.save(timeline);
@@ -48,11 +57,9 @@ public class TimelineService {
     @Transactional
     public void deleteTimeline(User user, Long timelineId) {
         Timeline timeline = timelineRepository.findByIdAndDeletedAtIsNull(timelineId)
-            .orElseThrow(() -> new EntityNotFoundException("Timeline not found"));
+            .orElseThrow(() -> new CrumingException(ErrorCode.TIMELINE_NOT_FOUND));
 
-        if (!timeline.getUser().getId().equals(user.getId())) {
-            throw new IllegalStateException("Not authorized to delete this timeline");
-        }
+        timelineValidator.validateTimelineAuthor(timeline, user);
 
         List<TimelineReply> replies = timelineReplyRepository.findAllByTimelineAndDeletedAtIsNull(timeline);
         replies.forEach(reply -> timelineReplyRepository.delete(reply));
@@ -61,84 +68,9 @@ public class TimelineService {
     }
 
     @Transactional
-    public void likeTimeline(User user, Long timelineId) {
-        Timeline timeline = timelineRepository.findByIdAndDeletedAtIsNull(timelineId)
-            .orElseThrow(() -> new EntityNotFoundException("Timeline not found"));
-
-        if (!timelineLikeRepository.existsByTimelineAndUser(timeline, user)) {
-            TimelineLike like = TimelineLike.builder()
-                .timeline(timeline)
-                .user(user)
-                .build();
-            timelineLikeRepository.save(like);
-        }
-    }
-
-    @Transactional
-    public void unlikeTimeline(User user, Long timelineId) {
-        Timeline timeline = timelineRepository.findByIdAndDeletedAtIsNull(timelineId)
-            .orElseThrow(() -> new EntityNotFoundException("Timeline not found"));
-
-        timelineLikeRepository.findByTimelineAndUser(timeline, user)
-            .ifPresent(timelineLikeRepository::delete);
-    }
-
-    @Transactional
-    public TimelineReplyResponse createReply(User user, Long timelineId, TimelineReplyRequest request) {
-        Timeline timeline = timelineRepository.findByIdAndDeletedAtIsNull(timelineId)
-            .orElseThrow(() -> new EntityNotFoundException("Timeline not found"));
-
-        TimelineReply parent = request.getParentId() != null 
-            ? timelineReplyRepository.findByIdAndDeletedAtIsNull(request.getParentId())
-                .orElseThrow(() -> new EntityNotFoundException("Parent reply not found"))
-            : null;
-
-        TimelineReply reply = timelineMapper.toEntity(request, timeline, user, parent);
-        reply = timelineReplyRepository.save(reply);
-        
-        return TimelineReplyResponse.fromEntity(reply, user);
-    }
-
-    public Page<TimelineListResponse> getUserTimelines(User currentUser, Long userId, Pageable pageable) {
-        User targetUser = userRepository.findById(userId)
-            .orElseThrow(() -> new EntityNotFoundException("User not found"));
-            
-        return timelineRepository.findByUserOrderByCreatedAtDesc(targetUser, pageable)
-            .map(timeline -> convertToListResponse(timeline, currentUser));
-    }
-    
-    public Page<TimelineListResponse> getUserTimelinesByDate(User currentUser, Long userId, LocalDate date, Pageable pageable) {
-        User targetUser = userRepository.findById(userId)
-            .orElseThrow(() -> new EntityNotFoundException("User not found"));
-            
-        LocalDateTime startOfDay = date.atStartOfDay();
-        LocalDateTime endOfDay = date.plusDays(1).atStartOfDay();
-        
-        return timelineRepository.findByUserAndActivityAtBetweenOrderByActivityAtDesc(
-                targetUser, startOfDay, endOfDay, pageable)
-            .map(timeline -> convertToListResponse(timeline, currentUser));
-    }
-    
-    public TimelineResponse getTimelineDetail(User currentUser, Long timelineId) {
-        Timeline timeline = timelineRepository.findByIdAndDeletedAtIsNull(timelineId)
-            .orElseThrow(() -> new EntityNotFoundException("Timeline not found"));
-            
-        return convertToResponse(timeline, currentUser);
-    }
-
-    private TimelineListResponse convertToListResponse(Timeline timeline, User currentUser) {
-        return TimelineListResponse.fromEntity(timeline, currentUser);
-    }
-
-    private TimelineResponse convertToResponse(Timeline timeline, User currentUser) {
-        return TimelineResponse.fromEntity(timeline, currentUser);
-    }
-
-
-    @Transactional
     public boolean toggleTimelineLike(User user, Long timelineId) {
         Timeline timeline = timelineRepository.findByIdAndDeletedAtIsNull(timelineId)
-            .orElseThrow(() -> new EntityNotFoundException("Timeline not found"));
+            .orElseThrow(() -> new CrumingException(ErrorCode.TIMELINE_NOT_FOUND));
 
         return timelineLikeRepository.findByTimelineAndUser(timeline, user)
             .map(like -> {
@@ -155,12 +87,83 @@ public class TimelineService {
             });
     }
 
+    @Transactional
+    public TimelineReplyResponse createReply(User user, Long timelineId, TimelineReplyRequest request) {
+        timelineValidator.validateReplyRequest(request);
+        
+        Timeline timeline = timelineRepository.findByIdAndDeletedAtIsNull(timelineId)
+            .orElseThrow(() -> new CrumingException(ErrorCode.TIMELINE_NOT_FOUND));
+
+        TimelineReply parent = request.getParentId() != null 
+            ? timelineReplyRepository.findByIdAndDeletedAtIsNull(request.getParentId())
+                .orElseThrow(() -> new CrumingException(ErrorCode.REPLY_NOT_FOUND))
+            : null;
+
+        TimelineReply reply = timelineMapper.toEntity(request, timeline, user, parent);
+        reply = timelineReplyRepository.save(reply);
+        
+        return TimelineReplyResponse.fromEntity(reply, user);
+    }
+
+    public Page<TimelineListResponse> getUserTimelines(User currentUser, Long userId, Pageable pageable) {
+        User targetUser = userRepository.findById(userId)
+            .orElseThrow(() -> new CrumingException(ErrorCode.USER_NOT_FOUND));
+            
+        return timelineRepository.findByUserOrderByCreatedAtDesc(targetUser, pageable)
+            .map(timeline -> convertToListResponse(timeline, currentUser));
+    }
+    
+    public Page<TimelineListResponse> getUserTimelinesByDate(User currentUser, Long userId, LocalDate date, Pageable pageable) {
+        User targetUser = userRepository.findById(userId)
+            .orElseThrow(() -> new CrumingException(ErrorCode.USER_NOT_FOUND));
+            
+        LocalDateTime startOfDay = date.atStartOfDay();
+        LocalDateTime endOfDay = date.plusDays(1).atStartOfDay();
+        
+        return timelineRepository.findByUserAndActivityAtBetweenOrderByActivityAtDesc(
+                targetUser, startOfDay, endOfDay, pageable)
+            .map(timeline -> convertToListResponse(timeline, currentUser));
+    }
+    
+    public TimelineResponse getTimelineDetail(User currentUser, Long timelineId) {
+        Timeline timeline = timelineRepository.findByIdAndDeletedAtIsNull(timelineId)
+            .orElseThrow(() -> new CrumingException(ErrorCode.TIMELINE_NOT_FOUND));
+            
+        return convertToResponse(timeline, currentUser);
+    }
+
+    private TimelineListResponse convertToListResponse(Timeline timeline, User currentUser) {
+        return TimelineListResponse.fromEntity(timeline, currentUser);
+    }
+
+    private TimelineResponse convertToResponse(Timeline timeline, User currentUser) {
+        return TimelineResponse.fromEntity(timeline, currentUser);
+    }
+
     public Page<TimelineReplyResponse> getTimelineReplies(User currentUser, Long timelineId, Pageable pageable) {
         Timeline timeline = timelineRepository.findByIdAndDeletedAtIsNull(timelineId)
-            .orElseThrow(() -> new EntityNotFoundException("Timeline not found"));
+            .orElseThrow(() -> new CrumingException(ErrorCode.TIMELINE_NOT_FOUND));
             
         return timelineReplyRepository
             .findByTimelineAndParentIsNullOrderByCreatedAtAsc(timeline, pageable)
             .map(reply -> TimelineReplyResponse.fromEntity(reply, currentUser));
+    }
+
+    @Transactional(readOnly = true)
+    public Page<TimelineListResponse> getMonthlyTimelines(User user, int year, int month, Pageable pageable) {
+        LocalDateTime startOfMonth = LocalDateTime.of(year, month, 1, 0, 0);
+        LocalDateTime startOfNextMonth = startOfMonth.plusMonths(1);
+        
+        return timelineRepository.findByUserAndCreatedAtBetweenOrderByCreatedAtDesc(
+                user, startOfMonth, startOfNextMonth, pageable)
+            .map(timeline -> convertToListResponse(timeline, user));
+    }
+
+    @Transactional(readOnly = true)
+    public Page<TimelineListResponse> getFollowingTimelines(User user, Pageable pageable) {
+        List<Long> followingIds = followService.getAllFollowingIds(user.getId());
+        
+        return timelineRepository.findByUserIdInOrderByCreatedAtDesc(followingIds, pageable)
+            .map(timeline -> convertToListResponse(timeline, user));
     }
 } 
