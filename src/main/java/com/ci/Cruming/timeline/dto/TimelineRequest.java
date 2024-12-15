@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import com.ci.Cruming.common.constants.Visibility;
 
+import com.ci.Cruming.location.dto.LocationRequest;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -14,7 +15,7 @@ import lombok.Getter;
 @Builder
 public class TimelineRequest {
     @NotNull
-    private Long locationId;
+    LocationRequest location;
     
     @NotBlank
     @Size(max = 20)
