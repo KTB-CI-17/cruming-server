@@ -2,6 +2,7 @@ package com.ci.Cruming.timeline.service;
 
 import com.ci.Cruming.location.entity.Location;
 import com.ci.Cruming.location.repository.LocationRepository;
+import com.ci.Cruming.location.service.LocationService;
 import com.ci.Cruming.timeline.dto.*;
 import com.ci.Cruming.timeline.entity.Timeline;
 import com.ci.Cruming.timeline.entity.TimelineLike;
@@ -40,13 +41,13 @@ public class TimelineService {
     private final TimelineValidator timelineValidator;
     @Autowired
     private FollowService followService;
+    private final LocationService locationService;
 
     @Transactional
     public TimelineResponse createTimeline(User user, TimelineRequest request) {
         timelineValidator.validateTimelineRequest(request);
-        
-        Location location = locationRepository.findById(request.getLocationId())
-            .orElseThrow(() -> new CrumingException(ErrorCode.LOCATION_NOT_FOUND));
+
+        Location location = locationService.getOrCreateLocation(request.getLocation());
 
         Timeline timeline = timelineMapper.toEntity(request, user, location);
         timeline = timelineRepository.save(timeline);
