@@ -10,7 +10,7 @@ import com.ci.Cruming.file.entity.File;
 import com.ci.Cruming.file.entity.FileMapping;
 import com.ci.Cruming.file.repository.FileMappingRepository;
 import com.ci.Cruming.file.repository.FileRepository;
-import com.ci.Cruming.file.storage.FileStorage;
+import com.ci.Cruming.file.storage.S3FileStorage;
 import com.ci.Cruming.post.entity.Post;
 import com.ci.Cruming.user.entity.User;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +31,7 @@ import static com.ci.Cruming.common.utils.FileUtils.generateFileKey;
 @Transactional(readOnly = true)
 public class FileService {
 
-    private final FileStorage fileStorage;
+    private final S3FileStorage s3FileStorage;
     private final FileMappingRepository fileMappingRepository;
     private final FileRepository fileRepository;
     private final FileMapper fileMapper;
@@ -71,7 +71,7 @@ public class FileService {
                     .findFirst()
                     .orElseThrow(() -> new CrumingException(ErrorCode.INVALID_FILE_REQUEST));
             String fileKey = generateFileKey(FileUtils.getFileExtension(file.getOriginalFilename()));
-            String storedUrl = fileStorage.store(file, fileKey);
+            String storedUrl = s3FileStorage.store(file, fileKey);
             File fileEntity = fileMapper.toFile(file, fileMapping, user, matchingRequest.displayOrder(), storedUrl, fileKey);
             fileMapping.addFile(fileEntity);
         }
