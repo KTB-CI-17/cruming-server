@@ -2,6 +2,7 @@ package com.ci.Cruming.timeline.controller;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.List;
 
 import com.ci.Cruming.timeline.dto.*;
 
@@ -25,6 +26,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/v1/timelines")
@@ -32,7 +34,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "Timeline", description = "타임라인 API")
 public class TimelineController {
     private final TimelineService timelineService;
-    
+
     @Operation(summary = "타임라인 생성", description = "새로운 타임라인을 생성합니다.")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "타임라인 생성 성공"),
@@ -42,7 +44,8 @@ public class TimelineController {
     @PostMapping
     public ResponseEntity<Void> createTimeline(
             @Parameter(description = "인증된 사용자 정보") @AuthenticationPrincipal User user,
-            @Parameter(description = "타임라인 생성 정보") @Valid @RequestBody TimelineRequest request) {
+            @Parameter(description = "타임라인 생성 정보") @Valid @RequestPart TimelineRequest request,
+            @Parameter(description = "첨부 파일 목록") @RequestPart(required = false) List<MultipartFile> files) {
         TimelineResponse response = timelineService.createTimeline(user, request);
         return ResponseEntity.created(URI.create("/api/v1/timelines/" + response.id())).build();
     }

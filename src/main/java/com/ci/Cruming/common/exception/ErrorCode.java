@@ -51,6 +51,9 @@ public enum ErrorCode {
     FILE_NAME_MISMATCH(HttpStatus.BAD_REQUEST, "파일명이 일치하지 않습니다."),
     FAIL_FILE_SAVE(HttpStatus.INTERNAL_SERVER_ERROR, "파일 저장에 실패했습니다."),
     FAIL_FILE_DELETE(HttpStatus.INTERNAL_SERVER_ERROR, "파일 삭제에 실패했습니다."),
+    FILE_UPLOAD_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다."),
+    FILE_DOWNLOAD_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "파일 다운로드에 실패했습니다."),
+    FILE_ACCESS_DENIED(HttpStatus.FORBIDDEN, "파일에 접근할 수 없습니다."),
 
     // General
     INVALID_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),
