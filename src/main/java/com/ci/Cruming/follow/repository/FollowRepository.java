@@ -10,14 +10,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface FollowRepository extends JpaRepository<Follow, Long> {
 
     Long countByFollower(User user);
     Long countByFollowing(User user);
     boolean existsByFollowerAndFollowing(User follower, User following);
-    Optional<Follow> findByFollowerAndFollowing(User follower, User following);
     Page<Follow> findByFollower(User follower, Pageable pageable);
     Page<Follow> findByFollowing(User following, Pageable pageable);
     List<Follow> findByFollowerId(Long followerId);

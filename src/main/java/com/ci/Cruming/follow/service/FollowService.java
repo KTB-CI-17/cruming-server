@@ -49,11 +49,12 @@ public class FollowService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CrumingException(ErrorCode.USER_NOT_FOUND));
 
-        return followRepository.findByFollowing(user, pageable)
+        return followRepository.findByFollower(user, pageable)
                 .map(follow -> new FollowUserResponse(
-                        follow.getFollower().getId(),
-                        follow.getFollower().getNickname(),
-                        follow.getFollower().getProfileImageUrl()
+                        follow.getFollowing().getId(),
+                        follow.getFollowing().getNickname(),
+                        follow.getFollowing().getProfileImageUrl(),
+                        follow.getFollowing().getInstagramId()
                 ));
     }
 
@@ -61,11 +62,12 @@ public class FollowService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CrumingException(ErrorCode.USER_NOT_FOUND));
 
-        return followRepository.findByFollower(user, pageable)
+        return followRepository.findByFollowing(user, pageable)
                 .map(follow -> new FollowUserResponse(
-                        follow.getFollowing().getId(),
-                        follow.getFollowing().getNickname(),
-                        follow.getFollowing().getProfileImageUrl()
+                        follow.getFollower().getId(),
+                        follow.getFollower().getNickname(),
+                        follow.getFollower().getProfileImageUrl(),
+                        follow.getFollower().getInstagramId()
                 ));
     }
 
