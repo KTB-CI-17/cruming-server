@@ -23,18 +23,29 @@ public class UserService {
     private final UserMapper userMapper;
 
     public UserInfoResponse findUserInfo(User loginUser, Long findUserId) {
-        User findUser;
+        User findUser = findUserId == null ? loginUser :
+                userRepository.findById(findUserId)
+                        .orElseThrow(() -> new CrumingException(ErrorCode.USER_NOT_FOUND));
 
-        if (findUserId == null) {
-            findUser = loginUser;
-        } else {
-            findUser = userRepository.findById(findUserId)
-                    .orElseThrow(() -> new CrumingException(ErrorCode.USER_NOT_FOUND));
-        }
-
+        boolean isMe = loginUser.getId().equals(findUser.getId());
         Long followingCount = followRepository.countByFollowing(findUser);
         Long followerCount = followRepository.countByFollower(findUser);
 
-        return userMapper.toUserInfoResponse(findUser, loginUser, followingCount, followerCount);
+        boolean isFollowing = false;
+        boolean isFollowingMe = false;
+
+        if (!isMe) {
+            isFollowing = followRepository.existsByFollowerAndFollowing(findUser, loginUser);
+            isFollowingMe = followRepository.existsByFollowerAndFollowing(loginUser, findUser);
+        }
+
+        return userMapper.toUserInfoResponse(
+                findUser,
+                loginUser,
+                followingCount,
+                followerCount,
+                isFollowing,
+                isFollowingMe
+        );
     }
 }
