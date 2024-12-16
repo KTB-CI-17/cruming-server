@@ -6,7 +6,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class UserMapper {
 
-    public UserInfoResponse toUserInfoResponse(User findUser, User loginUser, Long followingCount, Long followerCount) {
+    public UserInfoResponse toUserInfoResponse(
+            User findUser,
+            User loginUser,
+            Long followingCount,
+            Long followerCount,
+            boolean isFollowing,
+            boolean isFollowingMe
+    ) {
         boolean isMe = findUser.getId().equals(loginUser.getId());
 
         return UserInfoResponse.builder()
@@ -21,6 +28,8 @@ public class UserMapper {
                 .followingCount(followingCount)
                 .followerCount(followerCount)
                 .isMe(isMe)
+                .isFollowing(isFollowing)
+                .isFollowingMe(isFollowingMe)
                 .build();
     }
 }

@@ -14,6 +14,8 @@ public record UserInfoResponse(
         String instagramId,
         Long followingCount,
         Long followerCount,
-        boolean isMe
+        boolean isMe,
+        boolean isFollowing,
+        boolean isFollowingMe
 ) {
 }
