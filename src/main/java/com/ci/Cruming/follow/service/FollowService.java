@@ -25,36 +25,24 @@ public class FollowService {
     private final UserRepository userRepository;
 
     @Transactional
-    public void follow(User follower, Long followingId) {
-        if (follower.getId().equals(followingId)) {
+    public Boolean toggleFollow(User loginUser, Long targetUserId) {
+        if (loginUser.getId().equals(targetUserId)) {
             throw new CrumingException(ErrorCode.CANNOT_FOLLOW_SELF);
         }
 
-        User following = userRepository.findById(followingId)
+        User target = userRepository.findById(targetUserId)
                 .orElseThrow(() -> new CrumingException(ErrorCode.USER_NOT_FOUND));
 
-        if (followRepository.existsByFollowerAndFollowing(follower, following)) {
-            throw new CrumingException(ErrorCode.ALREADY_FOLLOWING);
+        if (followRepository.existsByFollowerAndFollowing(target, loginUser)) {
+            followRepository.deleteByFollowerAndFollowing(target, loginUser);
+            return false;
         }
-
         Follow follow = Follow.builder()
-                .follower(follower)
-                .following(following)
-                .createdAt(LocalDateTime.now())
+                .follower(target)
+                .following(loginUser)
                 .build();
-
         followRepository.save(follow);
-    }
-
-    @Transactional
-    public void unfollow(User follower, Long followingId) {
-        User following = userRepository.findById(followingId)
-                .orElseThrow(() -> new CrumingException(ErrorCode.USER_NOT_FOUND));
-
-        Follow follow = followRepository.findByFollowerAndFollowing(follower, following)
-                .orElseThrow(() -> new CrumingException(ErrorCode.NOT_FOLLOWING));
-
-        followRepository.delete(follow);
+        return true;
     }
 
     public Page<FollowUserResponse> getFollowers(Long userId, Pageable pageable) {
@@ -87,4 +75,4 @@ public class FollowService {
             .map(follow -> follow.getFollowing().getId())
             .toList();
     }
-} 
+}
