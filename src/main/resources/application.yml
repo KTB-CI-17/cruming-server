@@ -24,7 +24,7 @@ kakao:
   auth:
     client-id: 702133a6ea31b504a515bfd611723c90
     client-secret: your-kakao-client-secret-here
-    redirect-uri: http://localhost:8080/api/auth/kakao/callback
+    redirect-uri: http://localhost:5173/api/auth/kakao/callback
 
 logging:
   level:
