@@ -11,6 +11,9 @@ public record FollowUserResponse(
         String nickname,
 
         @Schema(description = "프로필 이미지 URL")
-        String profileUrl
+        String profileUrl,
+
+        @Schema(description = "인스타그램 ID")
+        String instagramId
 ) {
 } 

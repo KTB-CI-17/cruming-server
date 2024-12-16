@@ -11,12 +11,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/follows")
 @RequiredArgsConstructor
@@ -74,18 +76,20 @@ public class FollowController {
             @PathVariable Long userId,
             @Parameter(description = "페이지네이션 정보")
             Pageable pageable) {
-        return ResponseEntity.ok(followService.getFollowers(userId, pageable));
+        Page<FollowUserResponse> getFollowers = followService.getFollowers(userId, pageable);
+        log.info("getFollowers={}", getFollowers.getContent());
+        return ResponseEntity.ok(getFollowers);
     }
 
-    @GetMapping("/followings/{userId}")
+    @GetMapping("/followers/me")
     @Operation(
-        summary = "팔로잉 목록 조회",
-        description = "특정 유저의 팔로잉 목록을 페이징하여 조회합니다."
+        summary = "본인 팔로워 목록 조회",
+        description = "본인의 팔로워 목록을 페이징하여 조회합니다."
     )
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "팔로잉 목록 조회 성공",
+            description = "팔로워 목록 조회 성공",
             content = @Content(schema = @Schema(implementation = Page.class))
         ),
         @ApiResponse(
@@ -94,11 +98,65 @@ public class FollowController {
             content = @Content(schema = @Schema(implementation = Error.class))
         )
     })
+    public ResponseEntity<Page<FollowUserResponse>> getFollowers(
+            @Parameter(description = "페이지네이션 정보")
+            Pageable pageable,
+            @AuthenticationPrincipal User loginUser) {
+        Page<FollowUserResponse> getFollowers = followService.getFollowers(loginUser.getId(), pageable);
+        log.info("getFollowers={}", getFollowers.getContent());
+        return ResponseEntity.ok(getFollowers);
+    }
+
+    @GetMapping("/followings/{userId}")
+    @Operation(
+            summary = "팔로잉 목록 조회",
+            description = "특정 유저의 팔로잉 목록을 페이징하여 조회합니다."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "팔로잉 목록 조회 성공",
+                    content = @Content(schema = @Schema(implementation = Page.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "유저를 찾을 수 없음",
+                    content = @Content(schema = @Schema(implementation = Error.class))
+            )
+    })
     public ResponseEntity<Page<FollowUserResponse>> getFollowings(
             @Parameter(description = "조회할 사용자 ID")
             @PathVariable Long userId,
             @Parameter(description = "페이지네이션 정보")
             Pageable pageable) {
-        return ResponseEntity.ok(followService.getFollowings(userId, pageable));
+        Page<FollowUserResponse> followings = followService.getFollowings(userId, pageable);
+        log.info("followings={}", followings.getContent());
+        return ResponseEntity.ok(followings);
+    }
+
+    @GetMapping("/followings/me")
+    @Operation(
+            summary = "본인 팔로잉 목록 조회",
+            description = "본인의 팔로잉 목록을 페이징하여 조회합니다."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "팔로잉 목록 조회 성공",
+                    content = @Content(schema = @Schema(implementation = Page.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "유저를 찾을 수 없음",
+                    content = @Content(schema = @Schema(implementation = Error.class))
+            )
+    })
+    public ResponseEntity<Page<FollowUserResponse>> getFollowings(
+            @Parameter(description = "페이지네이션 정보")
+            Pageable pageable,
+            @AuthenticationPrincipal User loginUser) {
+        Page<FollowUserResponse> followings = followService.getFollowings(loginUser.getId(), pageable);
+        log.info("followings={}", followings.getContent());
+        return ResponseEntity.ok(followings);
     }
 }
