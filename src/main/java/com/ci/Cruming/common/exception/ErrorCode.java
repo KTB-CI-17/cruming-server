@@ -65,7 +65,16 @@ public enum ErrorCode {
     // Timeline related
     TIMELINE_NOT_FOUND(HttpStatus.NOT_FOUND, "타임라인을 찾을 수 없습니다."),
     LOCATION_NOT_FOUND(HttpStatus.NOT_FOUND, "위치 정보를 찾을 수 없습니다."),
-    UNAUTHORIZED_ACCESS(HttpStatus.FORBIDDEN, "해당 작업에 대한 권한이 없습니다.");
+    UNAUTHORIZED_ACCESS(HttpStatus.FORBIDDEN, "해당 작업에 대한 권한이 없습니다."),
+
+    // user validation
+    INVALID_USER_NICKNAME(HttpStatus.BAD_REQUEST, "닉네임을 입력해주세요."),
+    INVALID_USER_NICKNAME_SIZE(HttpStatus.BAD_REQUEST, "닉네임은 50글자를 초과할 수 없습니다."),
+    INVALID_USER_HEIGHT_SIZE(HttpStatus.BAD_REQUEST, "키를 확인 후 다시 입력해주세요."),
+    INVALID_USER_ARM_REACH_SIZE(HttpStatus.BAD_REQUEST, "팔 길이를 확인 후 다시 입력해주세요."),
+    INVALID_USER_INTRO_SIZE(HttpStatus.BAD_REQUEST, "한줄 소개는 300자를 초과할 수 없습니다."),
+    INVALID_USER_INSTAGRAM_ID_SIZE(HttpStatus.BAD_REQUEST, "인스타그램 ID는 100자를 초과할 수 없습니다."),
+    ;
 
     private final HttpStatus status;
     private final String message;

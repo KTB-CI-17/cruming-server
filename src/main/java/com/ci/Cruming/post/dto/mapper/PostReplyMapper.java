@@ -1,5 +1,6 @@
 package com.ci.Cruming.post.dto.mapper;
 
+import com.ci.Cruming.common.utils.FileUtils;
 import com.ci.Cruming.post.dto.PostReplyResponse;
 import com.ci.Cruming.post.dto.PostReplyRequest;
 import com.ci.Cruming.post.entity.Post;
@@ -11,6 +12,12 @@ import java.util.List;
 
 @Component
 public class PostReplyMapper {
+
+    private final FileUtils fileUtils;
+
+    public PostReplyMapper(FileUtils fileUtils) {
+        this.fileUtils = fileUtils;
+    }
 
     public PostReply toPostReply(User user, Post post, PostReply parentReply, PostReplyRequest request) {
         return PostReply.builder()
@@ -28,7 +35,7 @@ public class PostReplyMapper {
                 postReply.getUser().getId(),
                 postReply.getContent(),
                 postReply.getCreatedAt(),
-                null, // TODO: user profile 가져오도록 수정
+                fileUtils.generatePresignedUrl(postReply.getUser().getProfileImageUrl()),
                 postReply.getUser().getNickname(),
                 isWriter,
                 totalChildCount
@@ -42,7 +49,7 @@ public class PostReplyMapper {
                 postReply.getUser().getId(),
                 postReply.getContent(),
                 postReply.getCreatedAt(),
-                null, // TODO: user profile 가져오도록 수정
+                fileUtils.generatePresignedUrl(postReply.getUser().getProfileImageUrl()),
                 postReply.getUser().getNickname(),
                 isWriter,
                 0L

@@ -25,8 +25,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Collections;
 
-import static com.ci.Cruming.common.utils.FileUtils.generateFileKey;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -37,6 +35,7 @@ public class FileService {
     private final FileMappingRepository fileMappingRepository;
     private final FileRepository fileRepository;
     private final FileMapper fileMapper;
+    private final FileUtils fileUtils;
 
     @Transactional
     public FileMapping createFiles(User user, FileMapping fileMapping, List<MultipartFile> files, List<FileRequest> fileRequests) {
@@ -72,7 +71,7 @@ public class FileService {
                     .filter(request -> request.originalFileName().equals(file.getOriginalFilename()))
                     .findFirst()
                     .orElseThrow(() -> new CrumingException(ErrorCode.INVALID_FILE_REQUEST));
-            String fileKey = generateFileKey(FileUtils.getFileExtension(file.getOriginalFilename()));
+            String fileKey = fileUtils.generatePostFileKey(fileUtils.getFileExtension(file.getOriginalFilename()));
             String storedUrl = s3FileStorage.store(file, fileKey);
             File fileEntity = fileMapper.toFile(file, fileMapping, user, matchingRequest.displayOrder(), storedUrl, fileKey);
             fileMapping.addFile(fileEntity);
@@ -87,10 +86,17 @@ public class FileService {
         fileRepository.deleteByPostId(post.getId(), FileTargetType.POST);
     }
 
+
     public List<File> getFilesByTimeline(Timeline timeline) {
         if (timeline.getFileMapping() == null) {
             return Collections.emptyList();
         }
         return fileRepository.findAllByFileMapping(timeline.getFileMapping());
+
+    public String storeProfileImageAndGetFileKey(MultipartFile file) {
+        String fileKey = fileUtils.generateProfileImageKey(fileUtils.getFileExtension(file.getOriginalFilename()));
+        s3FileStorage.store(file, fileKey);
+        return fileKey;
+
     }
 }
