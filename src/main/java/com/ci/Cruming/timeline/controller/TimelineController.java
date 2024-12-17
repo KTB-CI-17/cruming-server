@@ -46,7 +46,7 @@ public class TimelineController {
             @Parameter(description = "인증된 사용자 정보") @AuthenticationPrincipal User user,
             @Parameter(description = "타임라인 생성 정보") @Valid @RequestPart TimelineRequest request,
             @Parameter(description = "첨부 파일 목록") @RequestPart(required = false) List<MultipartFile> files) {
-        TimelineResponse response = timelineService.createTimeline(user, request);
+        TimelineResponse response = timelineService.createTimeline(user, request, files);
         return ResponseEntity.created(URI.create("/api/v1/timelines/" + response.id())).build();
     }
     
@@ -54,7 +54,7 @@ public class TimelineController {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "타임라인 삭제 성공"),
         @ApiResponse(responseCode = "403", description = "권한 없음"),
-        @ApiResponse(responseCode = "404", description = "타임라인�� 찾을 수 없음")
+        @ApiResponse(responseCode = "404", description = "타임라인을 찾을 수 없음")
     })
     @DeleteMapping("/{timelineId}")
     public ResponseEntity<Void> deleteTimeline(
@@ -77,7 +77,7 @@ public class TimelineController {
         return ResponseEntity.ok(isLiked);
     }
     
-    @Operation(summary = "타임라인 댓글 작성", description = "타임라인에 새로운 댓글을 작성합니다.")
+    @Operation(summary = "타임라인 댓글 작성", description = "타임라��에 새로운 댓글을 작성합니다.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "댓글 작성 성공"),
         @ApiResponse(responseCode = "400", description = "잘못된 요청"),
@@ -98,7 +98,7 @@ public class TimelineController {
     })
     @GetMapping("/users/{userId}")
     public ResponseEntity<Page<TimelineListResponse>> getUserTimelines(
-            @Parameter(description = "인증된 사용자 정보") @AuthenticationPrincipal User user,
+            @Parameter(description = "인증된 사��자 정보") @AuthenticationPrincipal User user,
             @Parameter(description = "조회할 사용자 ID") @PathVariable Long userId,
             @Parameter(description = "페이지네이션 정보") @PageableDefault(size = 10) Pageable pageable) {
         return ResponseEntity.ok(timelineService.getUserTimelines(user, userId, pageable));
@@ -161,11 +161,10 @@ public class TimelineController {
         @ApiResponse(responseCode = "400", description = "잘못된 월 입력")
     })
     @GetMapping("/monthly/{year}/{month}")
-    public ResponseEntity<Page<TimelineListResponse>> getMonthlyTimelines(
+    public ResponseEntity<List<TimelineListResponse>> getMonthlyTimelines(
             @Parameter(description = "인증된 사용자 정보") @AuthenticationPrincipal User user,
             @Parameter(description = "조회할 연도") @PathVariable int year,
-            @Parameter(description = "조회할 월 (1-12)") @PathVariable @Range(min = 1, max = 12) int month,
-            @Parameter(description = "페이지네이션 정보") @PageableDefault(size = 10) Pageable pageable) {
-        return ResponseEntity.ok(timelineService.getMonthlyTimelines(user, year, month, pageable));
+            @Parameter(description = "조회할 월 (1-12)") @PathVariable @Range(min = 1, max = 12) int month) {
+        return ResponseEntity.ok(timelineService.getMonthlyTimelines(user, year, month));
     }
 }
