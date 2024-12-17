@@ -56,13 +56,13 @@ public class UserService {
     }
 
     public UserEditInfo findUserEditInfo(User user) {
-        return userMapper.toUserEditInfo(user, fileMapper.createPresignedUrl(user.getProfileImageUrl()));
+        return userMapper.toUserEditInfo(user);
     }
 
     @Transactional
     public void updateProfileImageUrl(MultipartFile newProfileImage, User user) {
-        String fileKey = fileService.storeProfileImageAndGetFileKey(newProfileImage);
-        user.setProfileImageUrl(fileKey);
+        String fileUrl = fileService.storeProfileImageAndGetFileKey(newProfileImage);
+        user.setProfileImageUrl(fileUrl);
         userRepository.save(user);
     }
 

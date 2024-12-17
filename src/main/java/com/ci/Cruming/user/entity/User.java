@@ -1,6 +1,7 @@
 package com.ci.Cruming.user.entity;
 
 
+import com.ci.Cruming.common.utils.FileUtils;
 import com.ci.Cruming.location.entity.Location;
 import jakarta.persistence.*;
 import lombok.*;
@@ -95,10 +96,6 @@ public class User {
         }
 
         return homeGym.getPlaceName();
-    }
-
-    public void updateProfileImageUrl(String profileImageUrl) {
-        this.profileImageUrl = profileImageUrl;
     }
 
 }

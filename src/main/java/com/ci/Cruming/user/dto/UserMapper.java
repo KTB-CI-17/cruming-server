@@ -1,12 +1,17 @@
 package com.ci.Cruming.user.dto;
 
+import com.ci.Cruming.common.utils.FileUtils;
 import com.ci.Cruming.user.entity.User;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
 @Component
+@RequiredArgsConstructor
 public class UserMapper {
+
+    private final FileUtils fileUtils;
 
     public UserInfoResponse toUserInfoResponse(
             User findUser,
@@ -21,7 +26,7 @@ public class UserMapper {
         return UserInfoResponse.builder()
                 .id(findUser.getId())
                 .nickname(findUser.getNickname())
-                .profile(findUser.getProfileImageUrl())
+                .profile(fileUtils.generatePresignedUrl(findUser.getProfileImageUrl()))
                 .height(findUser.getHeight())
                 .armReach(findUser.getArmReach())
                 .intro(findUser.getIntro())
@@ -35,9 +40,9 @@ public class UserMapper {
                 .build();
     }
 
-    public UserEditInfo toUserEditInfo(User user, String presignedUrl) {
+    public UserEditInfo toUserEditInfo(User user) {
         return UserEditInfo.builder()
-                .profileImageUrl(presignedUrl)
+                .profileImageUrl(fileUtils.generatePresignedUrl(user.getProfileImageUrl()))
                 .nickname(user.getNickname())
                 .height(user.getHeight())
                 .armReach(user.getArmReach())

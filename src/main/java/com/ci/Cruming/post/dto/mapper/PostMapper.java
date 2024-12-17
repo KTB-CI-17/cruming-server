@@ -1,6 +1,7 @@
 package com.ci.Cruming.post.dto.mapper;
 
 import com.ci.Cruming.common.constants.Visibility;
+import com.ci.Cruming.common.utils.FileUtils;
 import com.ci.Cruming.file.dto.FileResponse;
 import com.ci.Cruming.location.entity.Location;
 import com.ci.Cruming.post.dto.*;
@@ -13,6 +14,12 @@ import java.util.Optional;
 
 @Component
 public class PostMapper {
+
+    private final FileUtils fileUtils;
+
+    public PostMapper(FileUtils fileUtils) {
+        this.fileUtils = fileUtils;
+    }
 
     public Post toPost(User user, PostRequest request, Location location) {
         return Post.builder()
@@ -54,7 +61,7 @@ public class PostMapper {
                 post.getCreatedAt(),
                 post.getUser().getId(),
                 post.getUser().getNickname(),
-                null, // TODO: user profile 가져오도록 수정
+                fileUtils.generatePresignedUrl(post.getUser().getProfileImageUrl()),
                 post.getUser().getInstagramId(),
                 isWriter,
                 files,
