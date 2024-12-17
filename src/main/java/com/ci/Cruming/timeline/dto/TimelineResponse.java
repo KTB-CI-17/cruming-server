@@ -1,8 +1,10 @@
 package com.ci.Cruming.timeline.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.ci.Cruming.common.constants.Visibility;
+import com.ci.Cruming.file.dto.FileResponse;
 import com.ci.Cruming.location.entity.Location;
 import com.ci.Cruming.timeline.entity.Timeline;
 import com.ci.Cruming.user.entity.User;
@@ -48,9 +50,11 @@ public record TimelineResponse(
     boolean isLiked,
     
     @NotNull
-    LocalDateTime createdAt
+    LocalDateTime createdAt,
+
+    List<FileResponse> files
 ) {
-    public static TimelineResponse fromEntity(Timeline timeline, User currentUser) {
+    public static TimelineResponse fromEntity(Timeline timeline, User currentUser, List<FileResponse> files) {
         boolean isLiked = timeline.getLikes().stream()
             .anyMatch(like -> like.getUser().getId().equals(currentUser.getId()));
 
@@ -70,6 +74,7 @@ public record TimelineResponse(
             .replyCount(timeline.getReplyCount())
             .isLiked(isLiked)
             .createdAt(timeline.getCreatedAt())
+            .files(files)
             .build();
     }
 }
