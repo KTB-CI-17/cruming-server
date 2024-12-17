@@ -15,9 +15,15 @@ public class FileUtils {
         return filename.substring(filename.lastIndexOf(".") + 1);
     }
 
-    public static String generateFileKey(String fileExtension) {
+    public static String generatePostFileKey(String fileExtension) {
         return String.format("posts/%s/%s.%s",
                 LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")),
+                UUID.randomUUID(),
+                fileExtension);
+    }
+
+    public static String generateProfileImageKey(String fileExtension) {
+        return String.format("profile/%s.%s",
                 UUID.randomUUID(),
                 fileExtension);
     }

@@ -54,7 +54,7 @@ public class FileMapper {
         );
     }
 
-    private String createPresignedUrl(String fileKey) {
+    public String createPresignedUrl(String fileKey) {
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.MINUTE, 30); // 30분 유효
 

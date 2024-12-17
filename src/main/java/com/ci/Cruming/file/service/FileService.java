@@ -23,7 +23,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Optional;
 
-import static com.ci.Cruming.common.utils.FileUtils.generateFileKey;
+import static com.ci.Cruming.common.utils.FileUtils.generatePostFileKey;
+import static com.ci.Cruming.common.utils.FileUtils.generateProfileImageKey;
 
 @Slf4j
 @Service
@@ -70,7 +71,7 @@ public class FileService {
                     .filter(request -> request.originalFileName().equals(file.getOriginalFilename()))
                     .findFirst()
                     .orElseThrow(() -> new CrumingException(ErrorCode.INVALID_FILE_REQUEST));
-            String fileKey = generateFileKey(FileUtils.getFileExtension(file.getOriginalFilename()));
+            String fileKey = generatePostFileKey(FileUtils.getFileExtension(file.getOriginalFilename()));
             String storedUrl = s3FileStorage.store(file, fileKey);
             File fileEntity = fileMapper.toFile(file, fileMapping, user, matchingRequest.displayOrder(), storedUrl, fileKey);
             fileMapping.addFile(fileEntity);
@@ -83,5 +84,12 @@ public class FileService {
 
     public void deleteByPost(Post post) {
         fileRepository.deleteByPostId(post.getId(), FileTargetType.POST);
+    }
+
+    public String storeProfileImageAndGetFileKey(MultipartFile file) {
+        String fileKey = generateProfileImageKey(FileUtils.getFileExtension(file.getOriginalFilename()));
+        s3FileStorage.store(file, fileKey);
+
+        return fileKey;
     }
 }

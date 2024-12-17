@@ -63,6 +63,7 @@ public class User {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
+    @Setter
     @Column(name = "profile_image_url")
     private String profileImageUrl;
 
@@ -99,4 +100,5 @@ public class User {
     public void updateProfileImageUrl(String profileImageUrl) {
         this.profileImageUrl = profileImageUrl;
     }
+
 }

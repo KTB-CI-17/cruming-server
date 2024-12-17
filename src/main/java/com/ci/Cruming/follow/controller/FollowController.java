@@ -76,9 +76,7 @@ public class FollowController {
             @PathVariable Long userId,
             @Parameter(description = "페이지네이션 정보")
             Pageable pageable) {
-        Page<FollowUserResponse> getFollowers = followService.getFollowers(userId, pageable);
-        log.info("getFollowers={}", getFollowers.getContent());
-        return ResponseEntity.ok(getFollowers);
+        return ResponseEntity.ok(followService.getFollowers(userId, pageable));
     }
 
     @GetMapping("/followers/me")
@@ -102,9 +100,7 @@ public class FollowController {
             @Parameter(description = "페이지네이션 정보")
             Pageable pageable,
             @AuthenticationPrincipal User loginUser) {
-        Page<FollowUserResponse> getFollowers = followService.getFollowers(loginUser.getId(), pageable);
-        log.info("getFollowers={}", getFollowers.getContent());
-        return ResponseEntity.ok(getFollowers);
+        return ResponseEntity.ok(followService.getFollowers(loginUser.getId(), pageable));
     }
 
     @GetMapping("/followings/{userId}")
@@ -129,9 +125,7 @@ public class FollowController {
             @PathVariable Long userId,
             @Parameter(description = "페이지네이션 정보")
             Pageable pageable) {
-        Page<FollowUserResponse> followings = followService.getFollowings(userId, pageable);
-        log.info("followings={}", followings.getContent());
-        return ResponseEntity.ok(followings);
+        return ResponseEntity.ok(followService.getFollowings(userId, pageable));
     }
 
     @GetMapping("/followings/me")
@@ -155,8 +149,6 @@ public class FollowController {
             @Parameter(description = "페이지네이션 정보")
             Pageable pageable,
             @AuthenticationPrincipal User loginUser) {
-        Page<FollowUserResponse> followings = followService.getFollowings(loginUser.getId(), pageable);
-        log.info("followings={}", followings.getContent());
-        return ResponseEntity.ok(followings);
+        return ResponseEntity.ok(followService.getFollowings(loginUser.getId(), pageable));
     }
 }
