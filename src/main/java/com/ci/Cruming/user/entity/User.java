@@ -20,14 +20,14 @@ import java.util.Objects;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-@ToString
+@ToString(exclude = "homeGym")
 public class User {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false, length = 50, unique = true)
     private String nickname;
 
     private Short height;
@@ -49,7 +49,7 @@ public class User {
     @JoinColumn(name = "home_gym")
     private Location homeGym;
 
-    @Column(name = "instagram_id")
+    @Column(name = "instagram_id", length = 100)
     private String instagramId;
 
     @Enumerated(EnumType.STRING)
@@ -96,6 +96,15 @@ public class User {
         }
 
         return homeGym.getPlaceName();
+    }
+
+    public void update(String nickname, Short height, Short armReach, String intro, Location homeGym, String instagramId) {
+        this.nickname = nickname;
+        this.height = height;
+        this.armReach = armReach;
+        this.intro = intro;
+        this.homeGym = homeGym;
+        this.instagramId = instagramId;
     }
 
 }

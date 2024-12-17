@@ -45,6 +45,9 @@ public class FileUtils {
     }
 
     public String generatePresignedUrl(String fileKey) {
+        if (fileKey.contains("kakaocdn.net")) {
+            return fileKey;
+        }
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.MINUTE, 30);
 

@@ -45,7 +45,7 @@ public class UserController {
             description = "내 정보 수정에 필요한 기존 내 정보를 조회합니다.")
     @GetMapping("/edit")
     public ResponseEntity<UserEditInfo> editUser(@AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(userService.findUserEditInfo(user));
+        return ResponseEntity.ok(userService.findUserEditInfo(user.getId()));
     }
 
     @Operation(
@@ -63,8 +63,8 @@ public class UserController {
             description = "내 정보를 수정합니다.")
     @PutMapping("/edit")
     public ResponseEntity<Void> editUser(@AuthenticationPrincipal User user,
-                                         UserEditRequest request) {
-        log.info("request={}", request);
+                                         @RequestBody UserEditRequest request) {
+        userService.updateProfile(user, request);
         return ResponseEntity.ok().build();
     }
 
