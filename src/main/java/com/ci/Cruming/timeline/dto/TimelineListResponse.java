@@ -16,7 +16,7 @@ public record TimelineListResponse(
     String content,
     String level,
     LocationDTO location,
-    LocalDateTime createdAt,
+    LocalDateTime activityAt,
     Long userId,
     String userNickname,
     boolean isWriter,
@@ -29,7 +29,7 @@ public record TimelineListResponse(
             .level(timeline.getLevel())
             .location(timeline.getLocation() != null ? 
                      LocationDTO.fromEntity(timeline.getLocation()) : null)
-            .createdAt(timeline.getCreatedAt())
+            .activityAt(timeline.getActivityAt())
             .userId(timeline.getUser().getId())
             .userNickname(timeline.getUser().getNickname())
             .isWriter(timeline.getUser().getId().equals(currentUser.getId()))
