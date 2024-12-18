@@ -31,6 +31,6 @@ public interface TimelineRepository extends JpaRepository<Timeline, Long> {
 
     @Query("SELECT t FROM Timeline t " +
             "JOIN Follow f ON t.user = f.following " +
-            "WHERE f.follower = :user")
+            "WHERE f.follower = :user AND t.visibility <> 'private'")
     Page<Timeline> findTimelinesByFollowerId(@Param("user") User user, Pageable pageable);
 }

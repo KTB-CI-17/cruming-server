@@ -1,4 +1,4 @@
-package com.ci.Cruming.timeline.mapper;
+package com.ci.Cruming.timeline.dto.mapper;
 
 import com.ci.Cruming.common.utils.FileUtils;
 import com.ci.Cruming.file.dto.FileResponse;
@@ -6,10 +6,8 @@ import com.ci.Cruming.file.dto.mapper.FileMapper;
 import com.ci.Cruming.file.service.FileService;
 import com.ci.Cruming.location.entity.Location;
 import com.ci.Cruming.timeline.dto.TimelineListResponse;
-import com.ci.Cruming.timeline.dto.TimelineReplyRequest;
 import com.ci.Cruming.timeline.dto.TimelineRequest;
 import com.ci.Cruming.timeline.dto.TimelineResponse;
-import com.ci.Cruming.timeline.entity.TimelineReply;
 import com.ci.Cruming.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -36,15 +34,6 @@ public class TimelineMapper {
             .content(request.getContent())
             .visibility(request.getVisibility())
             .activityAt(request.getActivityAt())
-            .build();
-    }
-
-    public TimelineReply toEntity(TimelineReplyRequest request, Timeline timeline, User user, TimelineReply parent) {
-        return TimelineReply.builder()
-            .timeline(timeline)
-            .parent(parent)
-            .user(user)
-            .content(request.getContent())
             .build();
     }
 
@@ -86,6 +75,7 @@ public class TimelineMapper {
                 .userProfileImage(fileUtils.generatePresignedUrl(timeline.getUser().getProfileImageUrl()))
                 .location(location)
                 .level(timeline.getLevel())
+                .isWriter(user.getId().equals(timeline.getUser().getId()))
                 .content(timeline.getContent())
                 .visibility(timeline.getVisibility())
                 .activityAt(timeline.getActivityAt())
