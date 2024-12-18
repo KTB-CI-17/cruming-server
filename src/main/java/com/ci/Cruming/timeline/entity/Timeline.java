@@ -79,4 +79,11 @@ public class Timeline {
         return this.replies.size();
     }
 
+    public void update(Location location, String level, String content, Visibility visibility, LocalDate activityAt) {
+        this.location = location;
+        this.level = level;
+        this.content = content;
+        this.visibility = visibility;
+        this.activityAt = activityAt;
+    }
 }

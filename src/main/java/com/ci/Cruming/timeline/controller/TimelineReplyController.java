@@ -25,21 +25,21 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/v1/timelines")
 @RequiredArgsConstructor
-@Tag(name = "Timeline Reply", description = "커뮤니티 댓글 API")
+@Tag(name = "Timeline Reply", description = "타임라인 댓글 API")
 public class TimelineReplyController {
 
     private final TimelineReplyService timelineReplyService;
 
-    @Operation(summary = "커뮤니티 댓글 작성", description = "커뮤니티에 새로운 댓글을 작성합니다.")
+    @Operation(summary = "타임라인 댓글 작성", description = "타임라인에 새로운 댓글을 작성합니다.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "댓글 작성 성공"),
         @ApiResponse(responseCode = "400", description = "잘못된 요청"),
-        @ApiResponse(responseCode = "404", description = "커뮤니티을 찾을 수 없음")
+        @ApiResponse(responseCode = "404", description = "타임라인을 찾을 수 없음")
     })
     @PostMapping("/{timelineId}/replies")
     public ResponseEntity<Void> createReply(
             @Parameter(description = "인증된 사용자 정보") @AuthenticationPrincipal User user,
-            @Parameter(description = "커뮤니티 ID") @PathVariable Long timelineId,
+            @Parameter(description = "타임라인 ID") @PathVariable Long timelineId,
             @Parameter(description = "댓글 작성 정보") @Valid @RequestBody TimelineReplyRequest request) {
         timelineReplyService.createReply(user, timelineId, request);
         return ResponseEntity.noContent().build();
@@ -79,15 +79,15 @@ public class TimelineReplyController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "커뮤니티 댓글 조회", description = "특정 커뮤니티의 댓글 목록을 조회합니다.")
+    @Operation(summary = "타임라인 댓글 조회", description = "특정 타임라인의 댓글 목록을 조회합니다.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "조회 성공"),
-        @ApiResponse(responseCode = "404", description = "커뮤니티을 찾을 수 없음")
+        @ApiResponse(responseCode = "404", description = "타임라인을 찾을 수 없음")
     })
     @GetMapping("/{timelineId}/replies")
     public ResponseEntity<Page<TimelineReplyResponse>> getTimelineReplies(
             @Parameter(description = "인증된 사용자 정보") @AuthenticationPrincipal User user,
-            @Parameter(description = "커뮤니티 ID") @PathVariable Long timelineId,
+            @Parameter(description = "타임라인 ID") @PathVariable Long timelineId,
             @Parameter(description = "페이지네이션 정보") Pageable pageable) {
         return ResponseEntity.ok(timelineReplyService.findTimelineReplyList(user, pageable, timelineId));
     }
