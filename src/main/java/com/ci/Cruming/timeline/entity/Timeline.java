@@ -3,7 +3,6 @@ package com.ci.Cruming.timeline.entity;
 import com.ci.Cruming.location.entity.Location;
 import com.ci.Cruming.user.entity.User;
 import com.ci.Cruming.common.constants.Visibility;
-import com.ci.Cruming.file.entity.FileMapping;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
@@ -62,15 +61,11 @@ public class Timeline {
     @Builder.Default
     @Where(clause = "deleted_at IS NULL")
     private List<TimelineReply> replies = new ArrayList<>();
-
-    @Setter
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    private FileMapping fileMapping;
-
+    
     public int getLikeCount() {
         return this.likes.size();
     }
-
+    
     public int getReplyCount() {
         return this.replies.size();
     }

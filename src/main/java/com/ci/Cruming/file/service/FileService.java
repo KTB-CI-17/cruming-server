@@ -13,7 +13,6 @@ import com.ci.Cruming.file.repository.FileRepository;
 import com.ci.Cruming.file.storage.S3FileStorage;
 import com.ci.Cruming.post.entity.Post;
 import com.ci.Cruming.user.entity.User;
-import com.ci.Cruming.timeline.entity.Timeline;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,7 +22,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Collections;
 
 @Slf4j
 @Service
@@ -86,17 +84,9 @@ public class FileService {
         fileRepository.deleteByPostId(post.getId(), FileTargetType.POST);
     }
 
-
-    public List<File> getFilesByTimeline(Timeline timeline) {
-        if (timeline.getFileMapping() == null) {
-            return Collections.emptyList();
-        }
-        return fileRepository.findAllByFileMapping(timeline.getFileMapping());
-
     public String storeProfileImageAndGetFileKey(MultipartFile file) {
         String fileKey = fileUtils.generateProfileImageKey(fileUtils.getFileExtension(file.getOriginalFilename()));
         s3FileStorage.store(file, fileKey);
         return fileKey;
-
     }
 }

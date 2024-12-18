@@ -237,5 +237,3 @@ gradle-app.setting
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,intellij+all,java,macos,windows,gradle
 
-# .gitignore에 추가
-src/main/resources/application.yml

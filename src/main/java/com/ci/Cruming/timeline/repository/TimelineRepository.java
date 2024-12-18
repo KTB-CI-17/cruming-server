@@ -27,9 +27,4 @@ public interface TimelineRepository extends JpaRepository<Timeline, Long> {
         Pageable pageable
     );
     Page<Timeline> findByUserIdInOrderByCreatedAtDesc(List<Long> userIds, Pageable pageable);
-    List<Timeline> findByUserAndCreatedAtBetweenOrderByCreatedAtDesc(
-            User user, 
-            LocalDateTime startDateTime, 
-            LocalDateTime endDateTime
-    );
 } 
