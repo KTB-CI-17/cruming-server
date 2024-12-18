@@ -1,6 +1,5 @@
 package com.ci.Cruming.timeline.dto;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import com.ci.Cruming.common.constants.Visibility;
@@ -12,9 +11,12 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.ToString;
+import java.time.LocalDate;
 
 @Getter
 @Builder
+@ToString
 public class TimelineRequest {
     @NotNull
     LocationRequest location;
@@ -31,7 +33,7 @@ public class TimelineRequest {
     private Visibility visibility;
     
     @NotNull
-    private LocalDateTime activityAt;
+    private LocalDate activityAt;
 
     private List<FileRequest> fileRequests;
 }

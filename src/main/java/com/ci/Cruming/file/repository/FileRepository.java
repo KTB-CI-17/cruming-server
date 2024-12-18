@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface FileRepository extends JpaRepository<File, Long> {
@@ -28,4 +29,13 @@ public interface FileRepository extends JpaRepository<File, Long> {
 
     @Query("SELECT f FROM File f WHERE f.mapping = :fileMapping ORDER BY f.displayOrder")
     List<File> findAllByFileMapping(@Param("fileMapping") FileMapping fileMapping);
+
+    Optional<File> findFirstByMappingOrderByDisplayOrderAsc(FileMapping mapping);
+
+    @Query("SELECT f FROM File f " +
+            "JOIN f.mapping m " +
+            "WHERE m.targetId = :timelineId " +
+            "AND m.targetType = :targetType " +
+            "ORDER BY f.displayOrder")
+    List<File> findByTimelineId(Long timelineId, FileTargetType targetType);
 }

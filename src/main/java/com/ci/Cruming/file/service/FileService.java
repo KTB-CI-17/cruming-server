@@ -5,6 +5,7 @@ import com.ci.Cruming.common.exception.CrumingException;
 import com.ci.Cruming.common.exception.ErrorCode;
 import com.ci.Cruming.common.utils.FileUtils;
 import com.ci.Cruming.file.dto.FileRequest;
+import com.ci.Cruming.file.dto.FileResponse;
 import com.ci.Cruming.file.dto.mapper.FileMapper;
 import com.ci.Cruming.file.entity.File;
 import com.ci.Cruming.file.entity.FileMapping;
@@ -87,10 +88,17 @@ public class FileService {
     }
 
     public List<File> getFilesByTimeline(Timeline timeline) {
-        if (timeline.getFileMapping() == null) {
-            return Collections.emptyList();
+        return fileRepository.findByTimelineId(timeline.getId(), FileTargetType.TIMELINE);
+    }
+
+    public FileResponse getFirstFileByMappingId(FileMapping fileMapping) {
+        if (fileMapping == null) {
+            return null;
         }
-        return fileRepository.findAllByFileMapping(timeline.getFileMapping());
+
+        return fileRepository.findFirstByMappingOrderByDisplayOrderAsc(fileMapping)
+                .map(fileMapper::toFileResponse)
+                .orElse(null);
     }
 
     public String storeProfileImageAndGetFileKey(MultipartFile file) {

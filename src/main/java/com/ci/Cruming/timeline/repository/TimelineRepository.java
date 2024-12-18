@@ -5,31 +5,32 @@ import com.ci.Cruming.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface TimelineRepository extends JpaRepository<Timeline, Long> {
-    List<Timeline> findByUserOrderByCreatedAtDesc(User user);
-    Optional<Timeline> findByIdAndDeletedAtIsNull(Long id);
-    List<Timeline> findByUserAndActivityAtBetweenOrderByActivityAtDesc(
-        User user, LocalDateTime startDateTime, LocalDateTime endDateTime);
-    Page<Timeline> findByUserOrderByCreatedAtDesc(User user, Pageable pageable);
-    Page<Timeline> findByUserAndActivityAtBetweenOrderByActivityAtDesc(
-        User user, LocalDateTime startDateTime, LocalDateTime endDateTime, Pageable pageable);
-    Page<Timeline> findByUserAndCreatedAtBetweenOrderByCreatedAtDesc(
-        User user, 
-        LocalDateTime startDateTime, 
-        LocalDateTime endDateTime, 
-        Pageable pageable
+
+    Page<Timeline> findByActivityAtBetweenOrderByActivityAtDesc(LocalDate startDate, LocalDate endDate, Pageable pageable);
+
+    @Query("SELECT DISTINCT t.activityAt FROM Timeline t " +
+            "WHERE t.activityAt BETWEEN :startDate AND :endDate " +
+            "AND t.user = :user " +
+            "ORDER BY t.activityAt")
+    List<LocalDate> findDistinctActivityAtByUserBetween(
+            @Param("user") User user,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
     );
-    Page<Timeline> findByUserIdInOrderByCreatedAtDesc(List<Long> userIds, Pageable pageable);
-    List<Timeline> findByUserAndCreatedAtBetweenOrderByCreatedAtDesc(
-            User user, 
-            LocalDateTime startDateTime, 
-            LocalDateTime endDateTime
-    );
-} 
+
+    Page<Timeline> findByUserOrderByActivityAtDesc(User user, Pageable pageable);
+
+    @Query("SELECT t FROM Timeline t " +
+            "JOIN Follow f ON t.user = f.following " +
+            "WHERE f.follower = :user")
+    Page<Timeline> findTimelinesByFollowerId(@Param("user") User user, Pageable pageable);
+}
