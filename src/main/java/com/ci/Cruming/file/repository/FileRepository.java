@@ -2,7 +2,6 @@ package com.ci.Cruming.file.repository;
 
 import com.ci.Cruming.common.constants.FileTargetType;
 import com.ci.Cruming.file.entity.File;
-import com.ci.Cruming.file.entity.FileMapping;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -25,7 +24,4 @@ public interface FileRepository extends JpaRepository<File, Long> {
     @Query("UPDATE File f SET f.status = 'DELETED' WHERE f.mapping.targetId = :postId AND f.mapping.targetType = :targetType")
     void deleteByPostId(@Param("postId") Long postId, @Param("targetType") FileTargetType targetType);
 
-
-    @Query("SELECT f FROM File f WHERE f.mapping = :fileMapping ORDER BY f.displayOrder")
-    List<File> findAllByFileMapping(@Param("fileMapping") FileMapping fileMapping);
 }
