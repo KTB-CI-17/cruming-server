@@ -1,16 +1,17 @@
 package com.ci.Cruming.timeline.service;
 
+import com.ci.Cruming.common.constants.Category;
 import com.ci.Cruming.common.constants.FileTargetType;
 import com.ci.Cruming.common.exception.CrumingException;
 import com.ci.Cruming.common.exception.ErrorCode;
 import com.ci.Cruming.file.dto.FileResponse;
+import com.ci.Cruming.file.dto.mapper.FileMapper;
 import com.ci.Cruming.file.entity.FileMapping;
 import com.ci.Cruming.file.service.FileService;
 import com.ci.Cruming.location.entity.Location;
 import com.ci.Cruming.location.service.LocationService;
-import com.ci.Cruming.timeline.dto.TimelineListResponse;
-import com.ci.Cruming.timeline.dto.TimelineRequest;
-import com.ci.Cruming.timeline.dto.TimelineResponse;
+import com.ci.Cruming.post.dto.PostEditRequest;
+import com.ci.Cruming.timeline.dto.*;
 import com.ci.Cruming.timeline.entity.Timeline;
 import com.ci.Cruming.timeline.entity.TimelineLike;
 import com.ci.Cruming.timeline.dto.mapper.TimelineMapper;
@@ -30,6 +31,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -44,6 +47,8 @@ public class TimelineService {
     private final TimelineRepository timelineRepository;
     private final UserRepository userRepository;
     private final TimelineLikeRepository timelineLikeRepository;
+    private final FileMapper fileMapper;
+    private final TimelineReplyService timelineReplyService;
 
     @Transactional
     public void createTimeline(User user, TimelineRequest request, List<MultipartFile> files) {
@@ -64,6 +69,20 @@ public class TimelineService {
                 .build();
     }
 
+    public TimelineEditInfo findTimelineEditInfo(Long timelineId) {
+        Timeline timeline = getTimeline(timelineId);
+        List<FileResponse> files = fileService.getFilesByTimeline(timeline)
+                .stream()
+                .map(fileMapper::toFileResponse)
+                .collect(Collectors.toList());
+
+        return timelineMapper.toTimelineEditInfo(timeline, files);
+    }
+
+    private Timeline getTimeline(Long timelineId) {
+        return timelineRepository.findById(timelineId)
+                .orElseThrow(() -> new CrumingException(ErrorCode.TIMELINE_NOT_FOUND));
+    }
     public Page<TimelineListResponse> getMonthlyTimelines(User user, int year, int month, Pageable pageable) {
         LocalDate startDate = getStartDate(year, month);
         LocalDate endDate = getEndDate(year, month);
@@ -153,4 +172,24 @@ public class TimelineService {
             });
     }
 
+    @Transactional
+    public void updateTimeline(User user, Long timelineId, TimelineEditRequest request, List<MultipartFile> newFiles) {
+        Timeline timeline = getTimeline(timelineId);
+        timelineValidator.validateTimelineAuthor(timeline, user);
+        timelineValidator.validateTimelineEditRequest(request);
+
+        fileService.deleteFiles(request.deleteFileIds());
+        fileService.editFiles(
+                user,
+                Optional.ofNullable(timeline.getFileMapping())
+                        .orElseGet(() -> createFileMapping(timeline.getId())),
+                newFiles, request.newFiles()
+        );
+
+        timeline.update(updateLocation(request), request.level(), request.content(), request.visibility(), request.activityAt());
+    }
+
+    private Location updateLocation(TimelineEditRequest request) {
+        return locationService.getOrCreateLocation(request.location());
+    }
 }

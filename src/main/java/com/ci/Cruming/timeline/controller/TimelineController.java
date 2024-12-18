@@ -1,8 +1,6 @@
 package com.ci.Cruming.timeline.controller;
 
-import com.ci.Cruming.timeline.dto.TimelineListResponse;
-import com.ci.Cruming.timeline.dto.TimelineRequest;
-import com.ci.Cruming.timeline.dto.TimelineResponse;
+import com.ci.Cruming.timeline.dto.*;
 import com.ci.Cruming.timeline.service.TimelineService;
 import com.ci.Cruming.user.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
@@ -45,6 +43,44 @@ public class TimelineController {
             @Parameter(description = "타임라인 생성 정보") @Valid @RequestPart TimelineRequest request,
             @Parameter(description = "첨부 파일 목록") @RequestPart(required = false) List<MultipartFile> files) {
         timelineService.createTimeline(user, request, files);
+        return ResponseEntity.noContent().build();
+    }
+
+
+    @GetMapping("/edit/{timelineId}")
+    @Operation(
+            summary = "타임라인 수정을 위한 데이터 조회",
+            description = "타임라인 수정에 필요한 기존 타임라인 정보를 조회합니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "조회 성공"),
+            @ApiResponse(responseCode = "404", description = "타임라인을 찾을 수 없음"),
+            @ApiResponse(responseCode = "400", description = "타임라인에 필수 데이터가 보함되지 않음")
+    })
+    public ResponseEntity<TimelineEditInfo> editTimeline(
+            @Parameter(description = "수정할 타임라인 ID") @PathVariable Long timelineId) {
+        TimelineEditInfo timelineEditInfo = timelineService.findTimelineEditInfo(timelineId);
+        return ResponseEntity.ok(timelineEditInfo);
+    }
+
+    @PatchMapping("/{timelineId}")
+    @Operation(
+            summary = "타임라인 수정",
+            description = "기존 타임라인을 수정합니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "수정 성공"),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청"),
+            @ApiResponse(responseCode = "403", description = "권한 없음"),
+            @ApiResponse(responseCode = "404", description = "타임라인을 찾을 수 없음")
+    })
+    public ResponseEntity<Void> updateTimeline(
+            @Parameter(description = "인증된 사용자 정보") @AuthenticationPrincipal User user,
+            @Parameter(description = "수정할 타임라인 ID") @PathVariable Long timelineId,
+            @Parameter(description = "수정할 타임라인 정보") @RequestPart(value = "request") TimelineEditRequest request,
+            @Parameter(description = "수정할 첨부 파일 목록") @RequestPart(value = "files", required = false) List<MultipartFile> files) {
+        log.info("request={}", request);
+        timelineService.updateTimeline(user, timelineId, request, files);
         return ResponseEntity.noContent().build();
     }
 

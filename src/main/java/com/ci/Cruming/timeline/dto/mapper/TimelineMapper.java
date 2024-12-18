@@ -5,6 +5,7 @@ import com.ci.Cruming.file.dto.FileResponse;
 import com.ci.Cruming.file.dto.mapper.FileMapper;
 import com.ci.Cruming.file.service.FileService;
 import com.ci.Cruming.location.entity.Location;
+import com.ci.Cruming.timeline.dto.TimelineEditInfo;
 import com.ci.Cruming.timeline.dto.TimelineListResponse;
 import com.ci.Cruming.timeline.dto.TimelineRequest;
 import com.ci.Cruming.timeline.dto.TimelineResponse;
@@ -86,5 +87,23 @@ public class TimelineMapper {
                 .files(files)
                 .build();
     }
-}
 
+    public TimelineEditInfo toTimelineEditInfo(Timeline timeline, List<FileResponse> files) {
+        return TimelineEditInfo.builder()
+                .id(timeline.getId())
+                .level(timeline.getLevel())
+                .content(timeline.getContent())
+                .visibility(timeline.getVisibility())
+                .activityAt(timeline.getActivityAt())
+                .location(Optional.ofNullable(timeline.getLocation())
+                        .map(loc -> new TimelineEditInfo.Location(
+                                loc.getPlaceName(),
+                                loc.getAddress(),
+                                loc.getLatitude(),
+                                loc.getLongitude()
+                        ))
+                        .orElse(null))
+                .files(files)
+                .build();
+    }
+}
