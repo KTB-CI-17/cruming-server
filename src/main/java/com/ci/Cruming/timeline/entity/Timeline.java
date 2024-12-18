@@ -55,7 +55,6 @@ public class Timeline {
 
     @OneToMany(mappedBy = "timeline")
     @Builder.Default
-    @Where(clause = "deleted_at IS NULL")
     private List<TimelineLike> likes = new ArrayList<>();
 
     @OneToMany(mappedBy = "timeline")
@@ -73,6 +72,14 @@ public class Timeline {
 
     public int getReplyCount() {
         return this.replies.size();
+    }
+
+    public void update(String content, Location location, String level, LocalDateTime activityAt, Visibility visibility) {
+        this.content = content;
+        this.location = location;
+        this.level = level;
+        this.activityAt = activityAt;
+        this.visibility = visibility;
     }
 
 }

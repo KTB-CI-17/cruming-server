@@ -92,7 +92,7 @@ public class FileService {
             return Collections.emptyList();
         }
         return fileRepository.findAllByFileMapping(timeline.getFileMapping());
-
+    }
     public String storeProfileImageAndGetFileKey(MultipartFile file) {
         String fileKey = fileUtils.generateProfileImageKey(fileUtils.getFileExtension(file.getOriginalFilename()));
         s3FileStorage.store(file, fileKey);

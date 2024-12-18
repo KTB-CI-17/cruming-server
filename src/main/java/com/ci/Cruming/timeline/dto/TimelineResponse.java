@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.ci.Cruming.common.constants.Visibility;
 import com.ci.Cruming.file.dto.FileResponse;
-import com.ci.Cruming.location.entity.Location;
+import com.ci.Cruming.location.dto.LocationDTO;
 import com.ci.Cruming.timeline.entity.Timeline;
 import com.ci.Cruming.user.entity.User;
 
@@ -25,7 +25,7 @@ public record TimelineResponse(
     TimelineUserDTO user,
     
     @NotNull
-    Location location,
+    LocationDTO location,
     
     @NotBlank
     @Size(max = 20)
@@ -65,7 +65,8 @@ public record TimelineResponse(
                 .nickname(timeline.getUser().getNickname())
                 .profileImageUrl(null)
                 .build())
-            .location(timeline.getLocation())
+            .location(timeline.getLocation() != null ? 
+                     LocationDTO.fromEntity(timeline.getLocation()) : null)
             .level(timeline.getLevel())
             .content(timeline.getContent())
             .visibility(timeline.getVisibility())

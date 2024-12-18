@@ -20,6 +20,7 @@ import com.ci.Cruming.follow.service.FollowService;
 import com.ci.Cruming.timeline.validator.TimelineValidator;
 import com.ci.Cruming.file.service.FileService;
 import com.ci.Cruming.file.dto.FileResponse;
+import com.ci.Cruming.file.entity.File;
 import com.ci.Cruming.file.entity.FileMapping;
 import com.ci.Cruming.file.dto.mapper.FileMapper;
 import com.ci.Cruming.file.dto.FileRequest;
@@ -30,6 +31,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -154,7 +156,7 @@ public class TimelineService {
     public TimelineResponse getTimelineDetail(User currentUser, Long timelineId) {
         Timeline timeline = timelineRepository.findByIdAndDeletedAtIsNull(timelineId)
             .orElseThrow(() -> new CrumingException(ErrorCode.TIMELINE_NOT_FOUND));
-            
+        System.out.println("timeline = " + timeline);
         return convertToResponse(timeline, currentUser);
     }
 
@@ -208,5 +210,57 @@ public class TimelineService {
                 .targetType(FileTargetType.TIMELINE)
                 .targetId(timelineId)
                 .build();
+    }
+
+    @Transactional
+    public Timeline updateTimeline(Long timelineId, TimelineRequest request, List<MultipartFile> files, Long userId) {
+        Timeline timeline = timelineRepository.findById(timelineId)
+                .orElseThrow(() -> new CrumingException(ErrorCode.TIMELINE_NOT_FOUND));
+
+        // 권한 확인
+        if (!timeline.getUser().getId().equals(userId)) {
+            throw new CrumingException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CrumingException(ErrorCode.USER_NOT_FOUND));
+
+        // 파일 처리
+        if (timeline.getFileMapping() != null) {
+            List<File> currentFiles = fileService.getFilesByTimeline(timeline);
+            fileService.deleteFiles(currentFiles.stream()
+                    .map(File::getId)
+                    .collect(Collectors.toList()));
+        }
+
+        // 새로운 파일 추가
+        if (!CollectionUtils.isEmpty(files)) {
+            FileMapping fileMapping = timeline.getFileMapping();
+            if (fileMapping == null) {
+                fileMapping = FileMapping.builder()
+                        .targetType(FileTargetType.TIMELINE)
+                        .targetId(timeline.getId())
+                        .build();
+                timeline.setFileMapping(fileMapping);
+            }
+
+            List<FileRequest> fileRequests = files.stream()
+                    .map(file -> new FileRequest(file.getOriginalFilename(), 0))
+                    .collect(Collectors.toList());
+
+            fileService.createFiles(user, fileMapping, files, fileRequests);
+        }
+
+        // 타임라인 정보 업데이트
+        Location location = locationService.getOrCreateLocation(request.getLocation());
+        timeline.update(
+            request.getContent(),
+            location,
+            request.getLevel(),
+            request.getActivityAt(),
+            request.getVisibility()
+        );
+
+        return timelineRepository.save(timeline);
     }
 } 

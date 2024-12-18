@@ -3,7 +3,6 @@ package com.ci.Cruming.timeline.dto;
 import java.time.LocalDateTime;
 
 import com.ci.Cruming.location.dto.LocationDTO;
-import com.ci.Cruming.location.entity.Location;
 import com.ci.Cruming.timeline.entity.Timeline;
 import com.ci.Cruming.user.entity.User;
 import com.ci.Cruming.file.dto.FileResponse;

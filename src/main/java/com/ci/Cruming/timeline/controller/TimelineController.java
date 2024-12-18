@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import com.ci.Cruming.timeline.dto.*;
+import com.ci.Cruming.timeline.entity.Timeline;
 
 import org.hibernate.validator.constraints.Range;
 import org.springframework.data.domain.Page;
@@ -126,7 +127,7 @@ public class TimelineController {
         @ApiResponse(responseCode = "200", description = "조회 성공"),
         @ApiResponse(responseCode = "404", description = "타임라인을 찾을 수 없음")
     })
-    @GetMapping("/{timelineId}/detail")
+    @GetMapping("/{timelineId}")
     public ResponseEntity<TimelineResponse> getTimelineDetail(
             @Parameter(description = "인증된 사용자 정보") @AuthenticationPrincipal User user,
             @Parameter(description = "조회할 타임라인 ID") @PathVariable Long timelineId) {
@@ -184,5 +185,17 @@ public class TimelineController {
         LocalDate date = LocalDate.of(year, month, day);
         Page<TimelineListResponse> timelinePage = timelineService.getUserTimelinesByDate(user, user.getId(), date, Pageable.unpaged());
         return ResponseEntity.ok(timelinePage.getContent());
+    }
+    
+    @PutMapping("/{timelineId}")
+    @Operation(summary = "타임라인 수정", description = "타임라인을 수정합니다.")
+    public ResponseEntity<TimelineResponse> updateTimeline(
+            @PathVariable Long timelineId,
+            @Valid @RequestPart(value = "request") TimelineRequest request,
+            @RequestPart(value = "files", required = false) List<MultipartFile> files,
+            @AuthenticationPrincipal User user
+    ) {
+        Timeline timeline = timelineService.updateTimeline(timelineId, request, files, user.getId());
+        return ResponseEntity.ok(TimelineResponse.fromEntity(timeline, user, null));
     }
 }
