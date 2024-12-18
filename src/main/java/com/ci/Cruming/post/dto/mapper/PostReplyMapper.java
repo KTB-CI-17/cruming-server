@@ -8,8 +8,6 @@ import com.ci.Cruming.post.entity.PostReply;
 import com.ci.Cruming.user.entity.User;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
 @Component
 public class PostReplyMapper {
 

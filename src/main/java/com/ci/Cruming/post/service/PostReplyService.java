@@ -29,7 +29,6 @@ public class PostReplyService {
     private final PostReplyRepository postReplyRepository;
     private final PostReplyValidator postReplyValidator;
     private final PostReplyMapper postReplyMapper;
-    private static final int CHILD_REPLY_SIZE = 5;
 
     @Transactional
     public void createPostReply(User user, PostReplyRequest request, Long postId, Long parentId) {
