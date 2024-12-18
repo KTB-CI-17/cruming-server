@@ -12,6 +12,7 @@ public enum ErrorCode {
     FAIL_GET_KAKAO_ACCESS_TOKEN(HttpStatus.INTERNAL_SERVER_ERROR, "카카오 인증 토큰 발급에 실패했습니다."),
     POST_NOT_AUTHORIZED(HttpStatus.FORBIDDEN, "해당 게시글에 대한 권한이 없습니다."),
     POST_REPLY_NOT_AUTHORIZED(HttpStatus.FORBIDDEN, "해당 댓글에 대한 권한이 없습니다."),
+    TIMELINE_REPLY_NOT_AUTHORIZED(HttpStatus.FORBIDDEN, "해당 댓글에 대한 권한이 없습니다."),
 
     // Resource Not Found
     POST_NOT_FOUND(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."),
@@ -31,6 +32,7 @@ public enum ErrorCode {
     INVALID_REPLY(HttpStatus.BAD_REQUEST, "댓글 내용을 입력해 주세요."),
     INVALID_REPLY_SIZE(HttpStatus.BAD_REQUEST, "댓글은 500자를 초과할 수 없습니다."),
     INVALID_REPLY_AND_POST(HttpStatus.BAD_REQUEST, "유효하지 않은 댓글입니다."),
+    INVALID_REPLY_AND_TIMELINE(HttpStatus.BAD_REQUEST, "유효하지 않은 댓글입니다."),
 
     // Location Validation
     INVALID_LOCATION(HttpStatus.BAD_REQUEST, "암장 위치를 선택해 주세요."),

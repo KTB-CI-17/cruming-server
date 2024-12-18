@@ -1,9 +1,8 @@
-package com.ci.Cruming.timeline.validator;
+package com.ci.Cruming.timeline.service.validator;
 
 import org.springframework.stereotype.Component;
 
 import com.ci.Cruming.timeline.dto.TimelineRequest;
-import com.ci.Cruming.timeline.dto.TimelineReplyRequest;
 import com.ci.Cruming.timeline.entity.Timeline;
 import com.ci.Cruming.user.entity.User;
 import com.ci.Cruming.common.exception.CrumingException;
@@ -27,15 +26,6 @@ public class TimelineValidator {
         }
         if (request.getLevel().length() > 20) {
             throw new CrumingException(ErrorCode.INVALID_REQUEST, "Level length exceeds maximum limit");
-        }
-    }
-    
-    public void validateReplyRequest(TimelineReplyRequest request) {
-        if (request.getContent() == null || request.getContent().trim().isEmpty()) {
-            throw new CrumingException(ErrorCode.INVALID_REQUEST, "Reply content cannot be empty");
-        }
-        if (request.getContent().length() > 1500) {
-            throw new CrumingException(ErrorCode.INVALID_REQUEST, "Reply content length exceeds maximum limit");
         }
     }
     

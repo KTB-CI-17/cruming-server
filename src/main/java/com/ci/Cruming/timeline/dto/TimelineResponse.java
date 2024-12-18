@@ -18,6 +18,7 @@ public record TimelineResponse(
     Long userId,
     String userNickname,
     String userProfileImage,
+    boolean isWriter,
     String location,
     String level,
     String content,

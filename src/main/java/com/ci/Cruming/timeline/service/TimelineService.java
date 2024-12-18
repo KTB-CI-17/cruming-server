@@ -6,7 +6,6 @@ import com.ci.Cruming.common.exception.ErrorCode;
 import com.ci.Cruming.file.dto.FileResponse;
 import com.ci.Cruming.file.entity.FileMapping;
 import com.ci.Cruming.file.service.FileService;
-import com.ci.Cruming.follow.service.FollowService;
 import com.ci.Cruming.location.entity.Location;
 import com.ci.Cruming.location.service.LocationService;
 import com.ci.Cruming.timeline.dto.TimelineListResponse;
@@ -14,10 +13,10 @@ import com.ci.Cruming.timeline.dto.TimelineRequest;
 import com.ci.Cruming.timeline.dto.TimelineResponse;
 import com.ci.Cruming.timeline.entity.Timeline;
 import com.ci.Cruming.timeline.entity.TimelineLike;
-import com.ci.Cruming.timeline.mapper.TimelineMapper;
+import com.ci.Cruming.timeline.dto.mapper.TimelineMapper;
 import com.ci.Cruming.timeline.repository.TimelineLikeRepository;
 import com.ci.Cruming.timeline.repository.TimelineRepository;
-import com.ci.Cruming.timeline.validator.TimelineValidator;
+import com.ci.Cruming.timeline.service.validator.TimelineValidator;
 import com.ci.Cruming.user.entity.User;
 import com.ci.Cruming.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -45,8 +44,6 @@ public class TimelineService {
     private final TimelineRepository timelineRepository;
     private final UserRepository userRepository;
     private final TimelineLikeRepository timelineLikeRepository;
-    private final FollowService followService;
-
 
     @Transactional
     public void createTimeline(User user, TimelineRequest request, List<MultipartFile> files) {
