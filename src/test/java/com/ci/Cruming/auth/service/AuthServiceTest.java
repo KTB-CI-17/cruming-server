@@ -5,7 +5,7 @@ import com.ci.Cruming.auth.dto.TokenResponse;
 import com.ci.Cruming.auth.dto.UserProfile;
 import com.ci.Cruming.auth.service.validator.AbstractTokenValidator;
 import com.ci.Cruming.auth.service.validator.TokenValidatorFactory;
-import com.ci.Cruming.user.entity.Platform;
+import com.ci.Cruming.common.constants.Platform;
 import com.ci.Cruming.user.entity.User;
 import com.ci.Cruming.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,13 +50,13 @@ class AuthServiceTest {
         User existingUser = User.builder()
             .nickname("테스트유저")
             .platform(Platform.NAVER)
-            .platformId(12345L)
+            .platformId(String.valueOf(12345L))
             .build();
         TokenResponse expectedResponse = new TokenResponse("access_token", "refresh_token", null);
 
         when(tokenValidatorFactory.getValidator(Platform.NAVER)).thenReturn(tokenValidator);
         when(tokenValidator.validateAndGetProfile("social_token")).thenReturn(profile);
-        when(userRepository.findByPlatformAndPlatformId(Platform.NAVER, 12345L))
+        when(userRepository.findByPlatformAndPlatformId(Platform.NAVER, String.valueOf(12345L)))
             .thenReturn(Optional.of(existingUser));
         when(jwtTokenProvider.createToken(any(User.class))).thenReturn(expectedResponse);
 

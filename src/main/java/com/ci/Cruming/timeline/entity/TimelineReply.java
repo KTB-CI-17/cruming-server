@@ -3,6 +3,7 @@ package com.ci.Cruming.timeline.entity;
 import com.ci.Cruming.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -45,4 +46,26 @@ public class TimelineReply {
 
     @Column
     private LocalDateTime deletedAt;
+
+    @Builder
+    public TimelineReply(Timeline timeline, TimelineReply parent, User user, String content) {
+        this.timeline = timeline;
+        this.parent = parent;
+        this.user = user;
+        this.content = content;
+        this.createdAt = LocalDateTime.now();
+    }
+
+    public void update(String content) {
+        this.content = content;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void delete() {
+        this.deletedAt = LocalDateTime.now();
+    }
+
+    public boolean isDeleted() {
+        return this.deletedAt != null;
+    }
 }

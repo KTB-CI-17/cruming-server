@@ -1,7 +1,7 @@
 package com.ci.Cruming.auth.service;
 
 import com.ci.Cruming.auth.dto.TokenResponse;
-import com.ci.Cruming.user.entity.Platform;
+import com.ci.Cruming.common.constants.Platform;
 import com.ci.Cruming.user.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,7 +23,7 @@ class JwtTokenProviderTest {
         User user = User.builder()
             .nickname("테스트유저")
             .platform(Platform.NAVER)
-            .platformId(12345L)
+            .platformId(String.valueOf(12345L))
             .build();
 
         // when
@@ -41,7 +41,7 @@ class JwtTokenProviderTest {
         User user = User.builder()
             .nickname("테스트유저")
             .platform(Platform.NAVER)
-            .platformId(12345L)
+            .platformId(String.valueOf(12345L))
             .build();
         TokenResponse tokenResponse = jwtTokenProvider.createToken(user);
 
@@ -58,7 +58,7 @@ class JwtTokenProviderTest {
         User user = User.builder()
             .nickname("테스트유저")
             .platform(Platform.NAVER)
-            .platformId(12345L)
+            .platformId(String.valueOf(12345L))
             .build();
         TokenResponse tokenResponse = jwtTokenProvider.createToken(user);
 

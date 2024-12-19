@@ -1,9 +1,17 @@
 package com.ci.Cruming.user.entity;
 
 
+import com.ci.Cruming.common.utils.FileUtils;
+import com.ci.Cruming.location.entity.Location;
 import jakarta.persistence.*;
 import lombok.*;
+import com.ci.Cruming.common.constants.Platform;
+import com.ci.Cruming.common.constants.UserStatus;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Entity
 @Table(name = "users")
@@ -11,14 +19,15 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@ToString
+@EntityListeners(AuditingEntityListener.class)
+@ToString(exclude = "homeGym")
 public class User {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false, length = 50, unique = true)
     private String nickname;
 
     private Short height;
@@ -31,26 +40,71 @@ public class User {
     private Platform platform;
 
     @Column(name = "platform_id")
-    private Long platformId;
+    private String platformId;
 
     @Column(length = 300)
     private String intro;
 
-    @Column(name = "home_gym")
-    private Long homeGym;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "home_gym")
+    private Location homeGym;
+
+    @Column(name = "instagram_id", length = 100)
+    private String instagramId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default
     private UserStatus status = UserStatus.ACTIVE;
 
+    @CreatedDate
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
+    @Setter
+    @Column(name = "profile_image_url")
+    private String profileImageUrl;
 
-    public User(String nickname, Platform platform, Long platformId) {
+    public User(String nickname, Platform platform, String platformId) {
         this.nickname = nickname;
         this.platform = platform;
         this.platformId = platformId;
     }
-} 
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        User user = (User) o;
+        return Objects.equals(getId(), user.getId()) &&
+                getPlatform() == user.getPlatform() &&
+                Objects.equals(getPlatformId(), user.getPlatformId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, platform, platformId);
+    }
+
+    public String getHomeGymPlaceName() {
+        if (homeGym == null) {
+            return null;
+        }
+
+        return homeGym.getPlaceName();
+    }
+
+    public void update(String nickname, Short height, Short armReach, String intro, Location homeGym, String instagramId) {
+        this.nickname = nickname;
+        this.height = height;
+        this.armReach = armReach;
+        this.intro = intro;
+        this.homeGym = homeGym;
+        this.instagramId = instagramId;
+    }
+
+}

@@ -12,8 +12,8 @@ public record LocationDTO(
         Double longitude,
         LocalDateTime createdAt) {
 
-    public static LocationDTO of(String placeName, String address, Double latitude, Double longitude) {
-        return new LocationDTO(null, placeName, address, latitude, longitude, null);
+    public LocationDTO(String placeName, String address, Double latitude, Double longitude) {
+        this(null, placeName, address, latitude, longitude, null);
     }
 
     public Location toEntity() {
@@ -25,5 +25,18 @@ public record LocationDTO(
                 .longitude(longitude)
                 .createdAt(createdAt)
                 .build();
+    }
+
+    public static LocationDTO fromEntity(Location entity) {
+        if (entity == null) return null;
+        
+        return new LocationDTO(
+            entity.getId(),
+            entity.getPlaceName(),
+            entity.getAddress(),
+            entity.getLatitude(),
+            entity.getLongitude(),
+            entity.getCreatedAt()
+        );
     }
 }

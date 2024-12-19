@@ -3,10 +3,14 @@ package com.ci.Cruming.timeline.entity;
 import com.ci.Cruming.location.entity.Location;
 import com.ci.Cruming.user.entity.User;
 import com.ci.Cruming.common.constants.Visibility;
+import com.ci.Cruming.file.entity.FileMapping;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
+import java.time.LocalDate;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -14,8 +18,13 @@ import java.util.List;
 
 @Entity
 @Table(name = "timeline")
+@SQLDelete(sql = "UPDATE timeline SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
+@Where(clause = "deleted_at IS NULL")
+@AllArgsConstructor
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@EntityListeners(AuditingEntityListener.class)
+@Builder
 public class Timeline {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,8 +49,9 @@ public class Timeline {
     private Visibility visibility;
 
     @Column(nullable = false)
-    private LocalDateTime activityAt;
+    private LocalDate activityAt;
 
+    @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -49,8 +59,31 @@ public class Timeline {
     private LocalDateTime deletedAt;
 
     @OneToMany(mappedBy = "timeline")
+    @Builder.Default
     private List<TimelineLike> likes = new ArrayList<>();
 
     @OneToMany(mappedBy = "timeline")
+    @Builder.Default
+    @Where(clause = "deleted_at IS NULL")
     private List<TimelineReply> replies = new ArrayList<>();
+
+    @Setter
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    private FileMapping fileMapping;
+
+    public int getLikeCount() {
+        return this.likes.size();
+    }
+
+    public int getReplyCount() {
+        return this.replies.size();
+    }
+
+    public void update(Location location, String level, String content, Visibility visibility, LocalDate activityAt) {
+        this.location = location;
+        this.level = level;
+        this.content = content;
+        this.visibility = visibility;
+        this.activityAt = activityAt;
+    }
 }
