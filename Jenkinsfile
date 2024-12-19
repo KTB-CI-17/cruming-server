@@ -1,5 +1,5 @@
 pipeline {
-    agent any
+    agent { label 'docker' }
 
     environment {
         REPO                    = 'KTB-CI-17/cruming-server'
