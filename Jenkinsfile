@@ -3,19 +3,20 @@ pipeline {
 
     environment {
         REPO                    = 'KTB-CI-17/cruming-server'
-        DOCKER_IMAGE_NAME       = 'choiseu98/ktb-cruming-server'
-        DOCKER_CREDENTIALS_ID   = 'docker_account'
-        EC2_USER                = 'ubuntu'
-        CONTAINER_NAME          = 'ktb-cruming-server'
-        REMOTE_PORT             = '8080'
-        IMAGE_TAG               = 'latest'
+        GIT_BRANCH              = 'product'
+        GIT_CREDENTIALS_ID      = 'github_account' // 매니페스트 저장소 접근을 위한 크리덴셜 ID
+        AWS_CRED_ID             = 'aws_credentials' // AWS Access Key/Secret Key 저장한 Jenkins Credentials
+        AWS_REGION              = 'ap-northeast-2'
+        AWS_ACCOUNT_ID          = credentials('aws_account_id')
+        ECR_REPO        = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/ktb-cruming-server"
+        IMAGE_TAG               = "${env.BUILD_NUMBER}"
     }
 
     stages {
         stage('Git Checkout') {
             steps {
-                git branch: 'product',
-                    credentialsId: 'github_account',
+                git branch: "${GIT_BRANCH}",
+                    credentialsId: "${GIT_CREDENTIALS_ID}",
                     url: "https://github.com/${REPO}.git"
             }
         }
@@ -25,87 +26,89 @@ pipeline {
                 script {
                     sh """
                         export DOCKER_BUILDKIT=1
-                        docker build --cache-from ${DOCKER_IMAGE_NAME}:${IMAGE_TAG} -t ${DOCKER_IMAGE_NAME}:${IMAGE_TAG} .
-                        docker tag ${DOCKER_IMAGE_NAME}:${IMAGE_TAG} ${DOCKER_IMAGE_NAME}:latest
+                        docker build --cache-from ${ECR_REPO}:${IMAGE_TAG} -t ${ECR_REPO}:${IMAGE_TAG} .
+                        docker tag ${ECR_REPO}:${IMAGE_TAG} ${ECR_REPO}:latest
                     """
                 }
             }
         }
 
-        stage('Push to Docker Hub') {
+        stage('Push to ECR') {
             steps {
                 script {
-                    docker.withRegistry('https://index.docker.io/v1/', "${DOCKER_CREDENTIALS_ID}") {
-                        docker.image("${DOCKER_IMAGE_NAME}:${IMAGE_TAG}").push()
+                    docker.withRegistry("https://${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com", "${AWS_CRED_ID}") {
+                        docker.image("${ECR_REPO}:${IMAGE_TAG}").push()
                     }
                 }
             }
         }
+
+
 
         stage('Debug Environment Variables') {
             steps {
                 script {
                     echo "REPO: ${REPO}"
-                    echo "DOCKER_IMAGE_NAME: ${DOCKER_IMAGE_NAME}"
-                    echo "DOCKER_CREDENTIALS_ID: ${DOCKER_CREDENTIALS_ID}"
-                    echo "EC2_USER: ${EC2_USER}"
-                    echo "CONTAINER_NAME: ${CONTAINER_NAME}"
-                    echo "REMOTE_PORT: ${REMOTE_PORT}"
+                    echo "GIT_BRANCH: ${GIT_BRANCH}"
+                    echo "GIT_CREDENTIALS_ID: ${GIT_CREDENTIALS_ID}"
+                    echo "AWS_CRED_ID: ${AWS_CRED_ID}"
+                    echo "AWS_REGION: ${AWS_REGION}"
+                    echo "AWS_ACCOUNT_ID: ${AWS_ACCOUNT_ID}"
+                    echo "ECR_REPO: ${ECR_REPO}"
                     echo "IMAGE_TAG: ${IMAGE_TAG}"
-                    // FLUENTD_ADDRESS는 Deploy 단계에서만 사용되므로 별도 출력 필요
                 }
             }
         }
 
-        stage('Deploy to BackEnd Server') {
-            steps {
-                script {
-                    withCredentials([
-                        string(credentialsId: 'back_ip', variable: 'PRIVATE_IP'),
-                        string(credentialsId: 'fluentd_address', variable: 'FLUENTD_ADDRESS')
-                    ]) {
-                        echo "PRIVATE_IP: ${PRIVATE_IP}"
-                        echo "FLUENTD_ADDRESS: ${FLUENTD_ADDRESS}"
-                        sshagent(['ec2_ssh']) {
-                            sh """
-                            ssh -v -o StrictHostKeyChecking=no ubuntu@${PRIVATE_IP} \\
-                            "sudo docker pull ${DOCKER_IMAGE_NAME}:${IMAGE_TAG} && \\
-                            sudo docker stop ${CONTAINER_NAME} || true && \\
-                            sudo docker rm ${CONTAINER_NAME} || true && \\
-                            sudo docker run -d \\
-                              --name ${CONTAINER_NAME} \\
-                              --log-driver=fluentd \\
-                              --log-opt fluentd-address=${FLUENTD_ADDRESS} \\
-                              --log-opt tag=${CONTAINER_NAME} \\
-                              -p ${REMOTE_PORT}:${REMOTE_PORT} \\
-                              ${DOCKER_IMAGE_NAME}:${IMAGE_TAG}"
-                            """
-                        }
-                    }
-                }
-            }
-        }
+//         stage('Deploy to BackEnd Server') {
+//             steps {
+//                 script {
+//                     withCredentials([
+//                         string(credentialsId: 'back_ip', variable: 'PRIVATE_IP'),
+//                         string(credentialsId: 'fluentd_address', variable: 'FLUENTD_ADDRESS')
+//                     ]) {
+//                         echo "PRIVATE_IP: ${PRIVATE_IP}"
+//                         echo "FLUENTD_ADDRESS: ${FLUENTD_ADDRESS}"
+//                         sshagent(['ec2_ssh']) {
+//                             sh """
+//                             ssh -v -o StrictHostKeyChecking=no ubuntu@${PRIVATE_IP} \\
+//                             "sudo docker pull ${DOCKER_IMAGE_NAME}:${IMAGE_TAG} && \\
+//                             sudo docker stop ${CONTAINER_NAME} || true && \\
+//                             sudo docker rm ${CONTAINER_NAME} || true && \\
+//                             sudo docker run -d \\
+//                               --name ${CONTAINER_NAME} \\
+//                               --log-driver=fluentd \\
+//                               --log-opt fluentd-address=${FLUENTD_ADDRESS} \\
+//                               --log-opt tag=${CONTAINER_NAME} \\
+//                               -p ${REMOTE_PORT}:${REMOTE_PORT} \\
+//                               ${DOCKER_IMAGE_NAME}:${IMAGE_TAG}"
+//                             """
+//                         }
+//                     }
+//                 }
+//             }
+//         }
 
-        stage('Health Check') {
-            steps {
-                script {
-                    withCredentials([
-                        string(credentialsId: 'back_ip', variable: 'PRIVATE_IP')
-                    ]) {
-                        sshagent(['ec2_ssh']) {
-                            sh """
-                            ssh -v -o StrictHostKeyChecking=no ubuntu@${PRIVATE_IP} \\
-                            'for i in {1..12}; do \\
-                                curl -sf http://localhost:${REMOTE_PORT}/health && echo "Health check succeeded" && exit 0 || \\
-                                (echo "Attempt \$i: Health check failed, retrying in 5 seconds..." && sleep 5); \\
-                            done; \\
-                            echo "Health check failed after all attempts" && exit 1'
-                            """
-                        }
-                    }
-                }
-            }
-        }
+//         stage('Health Check') {
+//             steps {
+//                 script {
+//                     withCredentials([
+//                         string(credentialsId: 'back_ip', variable: 'PRIVATE_IP')
+//                     ]) {
+//                         sshagent(['ec2_ssh']) {
+//                             sh """
+//                             ssh -v -o StrictHostKeyChecking=no ubuntu@${PRIVATE_IP} \\
+//                             'for i in {1..12}; do \\
+//                                 curl -sf http://localhost:${REMOTE_PORT}/health && echo "Health check succeeded" && exit 0 || \\
+//                                 (echo "Attempt \$i: Health check failed, retrying in 5 seconds..." && sleep 5); \\
+//                             done; \\
+//                             echo "Health check failed after all attempts" && exit 1'
+//                             """
+//                         }
+//                     }
+//                 }
+//             }
+//         }
     }
 
     post {
