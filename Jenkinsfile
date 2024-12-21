@@ -7,11 +7,12 @@ pipeline {
         GIT_CREDENTIALS_ID      = 'github_account' // 매니페스트 저장소 접근을 위한 크리덴셜 ID
         DOCKER_HUB_CREDENTIALS_ID = 'docker_hub_credentials' // Docker Hub 크리덴셜 ID
         DOCKER_HUB_REPO         = 'minyubo/ktb-cruming-server'
-        // AWS_CRED_ID             = 'aws_credentials' // AWS Access Key/Secret Key 저장한 Jenkins Credentials
-        // AWS_REGION              = 'ap-northeast-2'
-        // AWS_ACCOUNT_ID          = credentials('aws_account_id')
-        // ECR_REPO        = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/ktb-cruming-server"
         IMAGE_TAG               = "${env.BUILD_NUMBER}"
+
+        // Kubernetes 매니페스트 저장소 설정
+        K8S_MANIFEST_REPO         = 'KTB-CI-17/cruming-k8s'
+        K8S_MANIFEST_BRANCH       = 'main'
+        K8S_MANIFEST_CREDENTIALS  = 'github_account'
     }
 
     stages {
@@ -49,33 +50,6 @@ pipeline {
                 }
             }
         }
-
-        // stage('Build Docker Image') {
-        //     steps {
-        //         script {
-        //             sh """
-        //                 export DOCKER_BUILDKIT=1
-        //                 docker buildx build --platform linux/amd64 \
-        //                     --cache-from ${ECR_REPO}:${IMAGE_TAG} \
-        //                     -t ${ECR_REPO}:${IMAGE_TAG} \
-        //                     --load .
-        //                 docker tag ${ECR_REPO}:${IMAGE_TAG} ${ECR_REPO}:latest
-        //             """
-        //         }
-        //     }
-        // }
-
-        // stage('Debug AWS Credentials') {
-        //     steps {
-        //         script {
-        //             sh """
-        //                 echo "Testing AWS CLI configuration:"
-        //                 aws sts get-caller-identity --region ${AWS_REGION}
-        //                 aws ecr describe-repositories --region ${AWS_REGION}
-        //             """
-        //         }
-        //     }
-        // }
 
 
         stage('Push to Docker Hub') {
@@ -128,34 +102,6 @@ pipeline {
                 }
             }
         }
-
-
-        // stage('Push to ECR') {
-        //     steps {
-        //         script {
-        //             docker.withRegistry("https://${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com", "${AWS_CRED_ID}") {
-        //                 docker.image("${ECR_REPO}:${IMAGE_TAG}").push()
-        //             }
-        //         }
-        //     }
-        // }
-
-
-
-        // stage('Debug Environment Variables') {
-        //     steps {
-        //         script {
-        //             echo "REPO: ${REPO}"
-        //             echo "GIT_BRANCH: ${GIT_BRANCH}"
-        //             echo "GIT_CREDENTIALS_ID: ${GIT_CREDENTIALS_ID}"
-        //             echo "AWS_CRED_ID: ${AWS_CRED_ID}"
-        //             echo "AWS_REGION: ${AWS_REGION}"
-        //             echo "AWS_ACCOUNT_ID: ${AWS_ACCOUNT_ID}"
-        //             echo "ECR_REPO: ${ECR_REPO}"
-        //             echo "IMAGE_TAG: ${IMAGE_TAG}"
-        //         }
-        //     }
-        // }
     }
 
     post {
