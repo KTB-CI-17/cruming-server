@@ -1,5 +1,5 @@
 pipeline {
-    agent any //테스트
+    agent any
 
     environment {
         REPO                    = 'KTB-CI-17/cruming-server'
