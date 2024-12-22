@@ -1,6 +1,5 @@
 package com.ci.Cruming.timeline.service;
 
-import com.ci.Cruming.common.constants.Category;
 import com.ci.Cruming.common.constants.FileTargetType;
 import com.ci.Cruming.common.exception.CrumingException;
 import com.ci.Cruming.common.exception.ErrorCode;
@@ -10,7 +9,6 @@ import com.ci.Cruming.file.entity.FileMapping;
 import com.ci.Cruming.file.service.FileService;
 import com.ci.Cruming.location.entity.Location;
 import com.ci.Cruming.location.service.LocationService;
-import com.ci.Cruming.post.dto.PostEditRequest;
 import com.ci.Cruming.timeline.dto.*;
 import com.ci.Cruming.timeline.entity.Timeline;
 import com.ci.Cruming.timeline.entity.TimelineLike;
