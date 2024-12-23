@@ -85,7 +85,7 @@ public class TimelineService {
         LocalDate startDate = getStartDate(year, month);
         LocalDate endDate = getEndDate(year, month);
 
-        return timelineRepository.findByActivityAtBetweenOrderByActivityAtDesc(startDate, endDate, pageable)
+        return timelineRepository.findByUserAndActivityAtBetweenOrderByActivityAtDesc(user, startDate, endDate, pageable)
                 .map(timeline -> {
                     FileResponse fileResponse = fileService.getFirstFileByMappingId(timeline.getFileMapping());
                     return timelineMapper.toTimelineListResponse(timeline, user, fileResponse);

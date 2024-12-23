@@ -15,7 +15,7 @@ import java.util.List;
 @Repository
 public interface TimelineRepository extends JpaRepository<Timeline, Long> {
 
-    Page<Timeline> findByActivityAtBetweenOrderByActivityAtDesc(LocalDate startDate, LocalDate endDate, Pageable pageable);
+    Page<Timeline> findByUserAndActivityAtBetweenOrderByActivityAtDesc(User user, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
     @Query("SELECT DISTINCT t.activityAt FROM Timeline t " +
             "WHERE t.activityAt BETWEEN :startDate AND :endDate " +
