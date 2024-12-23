@@ -2,12 +2,12 @@ pipeline {
     agent any
 
     environment {
-        REPO                    = 'KTB-CI-17/cruming-server'
-        GIT_BRANCH              = 'product'
-        GIT_CREDENTIALS_ID      = 'github_account' // 매니페스트 저장소 접근을 위한 크리덴셜 ID
-        DOCKER_HUB_CREDENTIALS_ID = 'docker_hub_credentials' // Docker Hub 크리덴셜 ID
-        DOCKER_HUB_REPO         = 'minyubo/ktb-cruming-server'
-        IMAGE_TAG               = "${env.BUILD_NUMBER}"
+        REPO                      = 'KTB-CI-17/cruming-server'
+        GIT_BRANCH                = 'product'
+        GIT_CREDENTIALS_ID        = 'github_account'
+        DOCKER_HUB_CREDENTIALS_ID = 'docker_hub_credentials'
+        DOCKER_HUB_REPO           = 'minyubo/cruming-server'
+        IMAGE_TAG                 = "${env.BUILD_NUMBER}"
 
         // Kubernetes 매니페스트 저장소 설정
         K8S_MANIFEST_REPO         = 'KTB-CI-17/cruming-k8s'
@@ -36,7 +36,6 @@ pipeline {
             }
         }
 
-
         stage('Build Docker Image') {
             steps {
                 script {
@@ -51,7 +50,6 @@ pipeline {
             }
         }
 
-
         stage('Push to Docker Hub') {
             steps {
                 script {
@@ -62,7 +60,6 @@ pipeline {
                 }
             }
         }
-
 
         stage('Update Kubernetes Manifests') {
             steps {
