@@ -13,7 +13,7 @@ public class HealthCheckController {
 
 	private static final Logger logger = LoggerFactory.getLogger(HealthCheckController.class);
 
-	@GetMapping("/health")
+	@GetMapping("/api/v1/health")
 	public Map<String, String> health() {
 		Map<String, String> returnMap = new HashMap<>();
 		returnMap.put("status", "ok");
