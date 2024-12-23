@@ -1,45 +1,57 @@
 jwt:
-  secret: your-256-bit-secret-key-here-must-be-at-least-32-characters
-  access-token-validity-in-seconds: 3600  # 1시간
-  refresh-token-validity-in-seconds: 86400 # 24시간 
+  secret: ${JWT_SECRET}  # Secret에서 가져오는 값
+  access-token-validity-in-seconds: ${JWT_ACCESS_TOKEN_VALIDITY_IN_SECONDS:3600}  # 기본값: 3600초
+  refresh-token-validity-in-seconds: ${JWT_REFRESH_TOKEN_VALIDITY_IN_SECONDS:86400}  # 기본값: 86400초
 
 spring:
   datasource:
-    url: jdbc:h2:mem:testdb;DB_CLOSE_ON_EXIT=FALSE
-    driver-class-name: org.h2.Driver
-    username: sa
-    password: 
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
+    url: ${SPRING_DATASOURCE_URL}  # Secret에서 가져오는 데이터베이스 URL
+    driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME:com.mysql.cj.jdbc.Driver}  # 기본값: MySQL 드라이버
+    username: ${SPRING_DATASOURCE_USERNAME}  # Secret에서 가져오는 사용자 이름
+    password: ${SPRING_DATASOURCE_PASSWORD}  # Secret에서 가져오는 비밀번호
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
+    open-in-view: ${SPRING_JPA_OPEN_IN_VIEW:false}  # 기본값: false
+    defer-datasource-initialization: ${SPRING_JPA_DEFER_DATASOURCE_INITIALIZATION:true}  # 기본값: true
     hibernate:
-      ddl-auto: create-drop
-    show-sql: true
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:none}  # 기본값: none
+    show-sql: ${SPRING_JPA_SHOW_SQL:true}  # 기본값: true
+    properties:
+      hibernate:
+        format_sql: ${SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL:true}  # 기본값: true
+        dialect: ${SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT:org.hibernate.dialect.MySQLDialect}  # 기본값: MySQL Dialect
 
-# Kakao OAuth Configuration
 kakao:
   auth:
-    client-id: 702133a6ea31b504a515bfd611723c90
-    client-secret: your-kakao-client-secret-here
-    redirect-uri: http://localhost:5173/api/auth/kakao/callback
+    client-id: ${KAKAO_AUTH_CLIENT_ID}  # Secret에서 가져오는 Kakao 클라이언트 ID
+    client-secret: ${KAKAO_AUTH_CLIENT_SECRET}  # Secret에서 가져오는 Kakao 클라이언트 Secret
+    redirect-uri: ${KAKAO_AUTH_REDIRECT_URI}  # Secret에서 가져오는 Redirect URI
 
 logging:
   level:
-    com.ci.Cruming: DEBUG
-    org.springframework.web: DEBUG
-    org.springframework.security: DEBUG
-    
+    com.ci.Cruming: ${LOGGING_LEVEL_COM_CI_CRUMING:DEBUG}  # 기본값: DEBUG
+    org.springframework.web.servlet: ${LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB_SERVLET:DEBUG}  # Secret에서 가져오는 로깅 수준
+    org.hibernate.type.descriptor.sql.BasicBinder: ${LOGGING_LEVEL_ORG_HIBERNATE_TYPE_DESCRIPTOR_SQL_BASICBINDER:TRACE}  # 기본값: TRACE
+    org.hibernate.SQL: ${LOGGING_LEVEL_ORG_HIBERNATE_SQL:DEBUG}  # 기본값: DEBUG
+
 springdoc:
   swagger-ui:
-    path: /swagger-ui.html
-    enabled: true
+    path: ${SPRINGDOC_SWAGGER_UI_PATH:/swagger-ui.html}  # 기본값: /swagger-ui.html
+    enabled: ${SPRINGDOC_SWAGGER_UI_ENABLED:true}  # 기본값: true
   api-docs:
-    path: /v3/api-docs
-    enabled: true
+    path: ${SPRINGDOC_API_DOCS_PATH:/v3/api-docs}  # 기본값: /v3/api-docs
+    enabled: ${SPRINGDOC_API_DOCS_ENABLED:true}  # 기본값: true
 
 file:
-  upload-dir: ${user.home}/cruming/uploads    # Linux/Mac 경로
-  # Windows의 경우: C:/cruming/uploads
+  upload-dir: ${FILE_UPLOAD_DIR:${user.home}/cruming/uploads}  # 기본값: 사용자 홈 디렉토리
+
+cloud:
+  aws:
+    credentials:
+      access-key: ${CLOUD_AWS_CREDENTIALS_ACCESS_KEY}  # Secret에서 가져오는 AWS 액세스 키
+      secret-key: ${CLOUD_AWS_CREDENTIALS_SECRET_KEY}  # Secret에서 가져오는 AWS Secret 키
+    region:
+      static: ${CLOUD_AWS_REGION_STATIC:ap-northeast-2}  # 기본값: ap-northeast-2
+    stack:
+      auto: ${CLOUD_AWS_STACK_AUTO:false}  # 기본값: false
+    s3:
+      bucket: ${CLOUD_AWS_S3_BUCKET}  # Secret에서 가져오는 S3 버킷 이름
