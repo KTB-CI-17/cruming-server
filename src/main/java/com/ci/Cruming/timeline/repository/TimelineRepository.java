@@ -30,7 +30,8 @@ public interface TimelineRepository extends JpaRepository<Timeline, Long> {
     Page<Timeline> findByUserOrderByActivityAtDesc(User user, Pageable pageable);
 
     @Query("SELECT t FROM Timeline t " +
-            "JOIN Follow f ON t.user = f.following " +
-            "WHERE f.follower = :user AND t.visibility <> 'private'")
+            "JOIN Follow f ON t.user = f.follower " +
+            "WHERE f.follower = :user AND t.visibility <> 'private' " +
+            "ORDER BY t.activityAt DESC")
     Page<Timeline> findTimelinesByFollowerId(@Param("user") User user, Pageable pageable);
 }
