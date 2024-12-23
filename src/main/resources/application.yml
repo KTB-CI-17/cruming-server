@@ -6,7 +6,7 @@ jwt:
 spring:
   datasource:
     url: ${SPRING_DATASOURCE_URL}  # Secret에서 가져오는 데이터베이스 URL
-    driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME:com.mysql.cj.jdbc.Driver}  # 기본값: MySQL 드라이버
+    driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME}
     username: ${SPRING_DATASOURCE_USERNAME}  # Secret에서 가져오는 사용자 이름
     password: ${SPRING_DATASOURCE_PASSWORD}  # Secret에서 가져오는 비밀번호
   jpa:
